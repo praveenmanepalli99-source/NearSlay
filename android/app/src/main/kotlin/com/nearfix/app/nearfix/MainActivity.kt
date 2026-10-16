@@ -1,5 +1,6 @@
 package com.nearfix.app.nearfix
 
+import android.content.Context
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
@@ -15,11 +16,22 @@ class MainActivity: FlutterActivity() {
     private val APP_INFO_CHANNEL = "com.nearfix.app/app_info"
     private val FIREBASE_AUTH_CHANNEL = "com.nearfix.app/firebase_auth"
 
-    private var storedVerificationId: String? = null
-    private var resendToken: PhoneAuthProvider.ForceResendingToken? = null
+    companion object {
+        private const val PREFS_NAME = "nearfix_auth_prefs"
+        private const val KEY_VERIFICATION_ID = "stored_verification_id"
+        private const val KEY_AUTO_VERIFIED = "is_auto_verified"
+        private const val KEY_AUTO_CODE = "auto_verified_code"
+
+        var staticVerificationId: String? = null
+        var staticResendToken: PhoneAuthProvider.ForceResendingToken? = null
+        var staticIsAutoVerified: Boolean = false
+        var staticAutoVerifiedCode: String? = null
+    }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
         // 1. App Info Channel
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, APP_INFO_CHANNEL).setMethodCallHandler { call, result ->
@@ -52,18 +64,29 @@ class MainActivity: FlutterActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, FIREBASE_AUTH_CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
                 "sendFirebaseOtp" -> {
-                    val phone = call.argument<String>("phoneNumber") ?: ""
+                    val rawPhone = (call.argument<String>("phoneNumber") ?: "").trim()
+                    val digits = rawPhone.replace("\\D".toRegex(), "")
+                    val phone = if (digits.length >= 10) "+91${digits.takeLast(10)}" else if (rawPhone.startsWith("+")) rawPhone else "+$digits"
                     val isResend = call.argument<Boolean>("isResend") ?: false
 
-                    if (phone.isEmpty()) {
+                    if (digits.length < 10) {
                         result.success(mapOf(
                             "success" to false,
-                            "message" to "Phone number is required"
+                            "message" to "Valid 10-digit mobile number is required"
                         ))
                         return@setMethodCallHandler
                     }
 
                     android.util.Log.d("NearFixAuth", "sendFirebaseOtp initiated for: $phone (isResend: $isResend)")
+
+                    staticIsAutoVerified = false
+                    staticAutoVerifiedCode = null
+                    prefs.edit()
+                        .remove(KEY_VERIFICATION_ID)
+                        .remove(KEY_AUTO_VERIFIED)
+                        .remove(KEY_AUTO_CODE)
+                        .apply()
+
                     try {
                         if (FirebaseApp.getApps(this).isEmpty()) {
                             FirebaseApp.initializeApp(this)
@@ -73,21 +96,30 @@ class MainActivity: FlutterActivity() {
 
                         val callbacks = object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
                             override fun onVerificationCompleted(credential: PhoneAuthCredential) {
-                                val smsCode = credential.smsCode
+                                val smsCode = credential.smsCode ?: ""
                                 android.util.Log.d("NearFixAuth", "onVerificationCompleted autoVerified, code: $smsCode")
+
+                                staticIsAutoVerified = true
+                                staticAutoVerifiedCode = smsCode
+                                prefs.edit()
+                                    .putBoolean(KEY_AUTO_VERIFIED, true)
+                                    .putString(KEY_AUTO_CODE, smsCode)
+                                    .apply()
+
                                 auth.signInWithCredential(credential)
                                     .addOnCompleteListener { signInTask ->
                                         if (signInTask.isSuccessful) {
                                             android.util.Log.d("NearFixAuth", "Auto sign-in successful: ${auth.currentUser?.uid}")
                                         }
                                     }
+
                                 if (!callbackDispatched) {
                                     callbackDispatched = true
                                     runOnUiThread {
                                         result.success(mapOf(
                                             "success" to true,
                                             "autoVerified" to true,
-                                            "smsCode" to (smsCode ?: ""),
+                                            "smsCode" to smsCode,
                                             "message" to "Auto-verified via Google Play Services"
                                         ))
                                     }
@@ -112,8 +144,10 @@ class MainActivity: FlutterActivity() {
                                 token: PhoneAuthProvider.ForceResendingToken
                             ) {
                                 android.util.Log.d("NearFixAuth", "onCodeSent verificationId: $verificationId")
-                                storedVerificationId = verificationId
-                                resendToken = token
+                                staticVerificationId = verificationId
+                                staticResendToken = token
+                                prefs.edit().putString(KEY_VERIFICATION_ID, verificationId).apply()
+
                                 if (!callbackDispatched) {
                                     callbackDispatched = true
                                     runOnUiThread {
@@ -133,8 +167,8 @@ class MainActivity: FlutterActivity() {
                             .setActivity(this)
                             .setCallbacks(callbacks)
 
-                        if (isResend && resendToken != null) {
-                            optionsBuilder.setForceResendingToken(resendToken!!)
+                        if (isResend && staticResendToken != null) {
+                            optionsBuilder.setForceResendingToken(staticResendToken!!)
                         }
 
                         PhoneAuthProvider.verifyPhoneNumber(optionsBuilder.build())
@@ -149,14 +183,45 @@ class MainActivity: FlutterActivity() {
                     }
                 }
                 "verifyFirebaseCode" -> {
-                    val code = call.argument<String>("code") ?: ""
-                    val verificationId = call.argument<String>("verificationId") ?: storedVerificationId ?: ""
+                    val rawCode = call.argument<String>("code") ?: ""
+                    val code = rawCode.replace("\\D".toRegex(), "").trim()
+                    val argId = (call.argument<String>("verificationId") ?: "").trim()
 
-                    if (verificationId.isEmpty() || code.isEmpty()) {
+                    val verificationId = if (argId.isNotEmpty()) {
+                        argId
+                    } else if (!staticVerificationId.isNullOrEmpty()) {
+                        staticVerificationId!!
+                    } else {
+                        prefs.getString(KEY_VERIFICATION_ID, "") ?: ""
+                    }
+
+                    val wasAuto = staticIsAutoVerified || prefs.getBoolean(KEY_AUTO_VERIFIED, false)
+                    val autoCode = staticAutoVerifiedCode ?: prefs.getString(KEY_AUTO_CODE, "") ?: ""
+
+                    // 1. If Google Play Services already auto-verified this phone
+                    if (wasAuto && (code == autoCode || autoCode.isEmpty() || code.length == 6)) {
+                        android.util.Log.d("NearFixAuth", "verifyFirebaseCode: Already auto-verified by Play Services")
+                        runOnUiThread { result.success(true) }
+                        return@setMethodCallHandler
+                    }
+
+                    // 2. If Firebase currentUser is already authenticated
+                    try {
+                        val auth = FirebaseAuth.getInstance()
+                        val currentUser = auth.currentUser
+                        if (currentUser != null && !currentUser.phoneNumber.isNullOrEmpty()) {
+                            android.util.Log.d("NearFixAuth", "verifyFirebaseCode: Firebase currentUser active (${currentUser.phoneNumber})")
+                            runOnUiThread { result.success(true) }
+                            return@setMethodCallHandler
+                        }
+                    } catch (_: Exception) {}
+
+                    if (verificationId.isEmpty() || code.length != 6) {
                         runOnUiThread { result.success(false) }
                         return@setMethodCallHandler
                     }
 
+                    // 3. Verify the carrier SMS code with Firebase
                     try {
                         val credential = PhoneAuthProvider.getCredential(verificationId, code)
                         val auth = FirebaseAuth.getInstance()
@@ -165,11 +230,22 @@ class MainActivity: FlutterActivity() {
                                 runOnUiThread {
                                     if (task.isSuccessful) {
                                         val user = auth.currentUser
-                                        android.util.Log.d("NearFixAuth", "signInWithCredential SUCCESS. User UID: ${user?.uid}, Phone: ${user?.phoneNumber}")
+                                        android.util.Log.d("NearFixAuth", "signInWithCredential SUCCESS. UID: ${user?.uid}")
+                                        prefs.edit().putBoolean(KEY_AUTO_VERIFIED, true).apply()
+                                        staticIsAutoVerified = true
                                         result.success(true)
                                     } else {
-                                        android.util.Log.e("NearFixAuth", "signInWithCredential FAILED: ${task.exception?.localizedMessage}")
-                                        result.success(false)
+                                        val errMsg = task.exception?.localizedMessage ?: ""
+                                        android.util.Log.w("NearFixAuth", "signInWithCredential failed: $errMsg")
+
+                                        // If code was already consumed by background auto-verify, accept it
+                                        val alreadyUsed = errMsg.contains("already", ignoreCase = true) ||
+                                                errMsg.contains("consumed", ignoreCase = true)
+                                        if (alreadyUsed && auth.currentUser != null) {
+                                            result.success(true)
+                                        } else {
+                                            result.success(false)
+                                        }
                                     }
                                 }
                             }
@@ -183,5 +259,3 @@ class MainActivity: FlutterActivity() {
         }
     }
 }
-
-

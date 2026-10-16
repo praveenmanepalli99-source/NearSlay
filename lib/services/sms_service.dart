@@ -56,6 +56,7 @@ class SmsService {
           ? savedFbKey
           : defaultFirebaseApiKey;
       customWebhookUrl = prefs.getString(_prefCustomUrl) ?? '';
+      lastFirebaseSessionInfo = prefs.getString('nearfix_last_firebase_session');
       final provIndex = prefs.getInt(_prefProvider);
       if (provIndex != null && provIndex < SmsGatewayProvider.values.length) {
         activeProvider = SmsGatewayProvider.values[provIndex];
@@ -106,12 +107,23 @@ class SmsService {
 
   /// Verify 6-digit OTP code using Google Firebase Phone Auth session
   static Future<bool> verifyFirebaseCode(String code) async {
+    final cleanCode = code.replaceAll(RegExp(r'\D'), '').trim();
+    if (cleanCode.length != 6) return false;
+
+    var verificationId = lastFirebaseSessionInfo ?? '';
+    if (verificationId.isEmpty) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        verificationId = prefs.getString('nearfix_last_firebase_session') ?? '';
+      } catch (_) {}
+    }
+
     try {
       final nativeOk = await _firebaseAuthChannel.invokeMethod<bool>(
         'verifyFirebaseCode',
         {
-          'code': code.trim(),
-          'verificationId': lastFirebaseSessionInfo ?? '',
+          'code': cleanCode,
+          'verificationId': verificationId,
         },
       );
       if (nativeOk == true) {
@@ -245,11 +257,16 @@ class SmsService {
       final nativeRes = await _firebaseAuthChannel.invokeMapMethod<String, dynamic>(
         'sendFirebaseOtp',
         {'phoneNumber': formattedPhone, 'isResend': isResend},
-      ).timeout(const Duration(seconds: 25), onTimeout: () => null);
+      ).timeout(const Duration(seconds: 60), onTimeout: () => null);
 
       if (nativeRes != null && nativeRes['success'] == true) {
         final verificationId = nativeRes['verificationId']?.toString();
         lastFirebaseSessionInfo = verificationId;
+        if (verificationId != null) {
+          SharedPreferences.getInstance().then((prefs) {
+            prefs.setString('nearfix_last_firebase_session', verificationId);
+          }).catchError((_) {});
+        }
         if (nativeRes['smsCode'] != null && nativeRes['smsCode'].toString().isNotEmpty) {
           lastSentOtpCode = nativeRes['smsCode'].toString().trim();
         }

@@ -253,33 +253,42 @@ class SmsService {
     final formattedPhone = '+91$phone';
 
     // 1. Primary: Attempt Native Google Play Services Firebase Phone Auth (Carrier Text SMS)
+    String nativeError = '';
     try {
       final nativeRes = await _firebaseAuthChannel.invokeMapMethod<String, dynamic>(
         'sendFirebaseOtp',
         {'phoneNumber': formattedPhone, 'isResend': isResend},
-      ).timeout(const Duration(seconds: 60), onTimeout: () => null);
+      ).timeout(const Duration(seconds: 45), onTimeout: () => null);
 
-      if (nativeRes != null && nativeRes['success'] == true) {
-        final verificationId = nativeRes['verificationId']?.toString();
-        lastFirebaseSessionInfo = verificationId;
-        if (verificationId != null) {
-          SharedPreferences.getInstance().then((prefs) {
-            prefs.setString('nearfix_last_firebase_session', verificationId);
-          }).catchError((_) {});
+      if (nativeRes != null) {
+        if (nativeRes['success'] == true) {
+          final verificationId = nativeRes['verificationId']?.toString();
+          lastFirebaseSessionInfo = verificationId;
+          if (verificationId != null) {
+            SharedPreferences.getInstance().then((prefs) {
+              prefs.setString('nearfix_last_firebase_session', verificationId);
+            }).catchError((_) {});
+          }
+          if (nativeRes['smsCode'] != null && nativeRes['smsCode'].toString().isNotEmpty) {
+            lastSentOtpCode = nativeRes['smsCode'].toString().trim();
+          }
+          return SmsResult(
+            success: true,
+            isSimulated: false,
+            message: nativeRes['message']?.toString() ?? 'SMS verification code sent from Firebase',
+            sessionId: verificationId,
+          );
+        } else {
+          nativeError = nativeRes['message']?.toString() ?? 'Firebase SMS verification failed';
         }
-        if (nativeRes['smsCode'] != null && nativeRes['smsCode'].toString().isNotEmpty) {
-          lastSentOtpCode = nativeRes['smsCode'].toString().trim();
-        }
-        return SmsResult(
-          success: true,
-          isSimulated: false,
-          message: nativeRes['message']?.toString() ?? 'SMS verification code sent from Firebase',
-          sessionId: verificationId,
-        );
+      } else {
+        nativeError = 'Firebase verification timed out. Please check network connectivity and try again.';
       }
-    } catch (_) {}
+    } catch (e) {
+      nativeError = e.toString();
+    }
 
-    // 2. Secondary Fallback: 2Factor.in (Automated Voice Call / SMS OTP on DND or Quota exhaustion)
+    // 2. Secondary Fallback: 2Factor.in (Only if API has active balance)
     try {
       final twoFactorResult = await _sendVia2Factor(phone, otp, default2FactorKey);
       if (twoFactorResult.success) {
@@ -292,34 +301,7 @@ class SmsService {
       }
     } catch (_) {}
 
-    // 3. Fallback to Firebase REST API
-    try {
-      final effectiveKey = apiKey.isNotEmpty ? apiKey : defaultFirebaseApiKey;
-      final url = Uri.parse(
-          'https://identitytoolkit.googleapis.com/v1/accounts:sendVerificationCode?key=$effectiveKey');
-
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'phoneNumber': formattedPhone,
-        }),
-      ).timeout(const Duration(seconds: 4));
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final session = data['sessionInfo']?.toString();
-        lastFirebaseSessionInfo = session;
-        return SmsResult(
-          success: true,
-          isSimulated: false,
-          message: 'SMS verification sent to $formattedPhone',
-          sessionId: session,
-        );
-      }
-    } catch (_) {}
-
-    // 4. Fallback to Fast2SMS
+    // 3. Fallback to Fast2SMS (Only if API has active balance)
     try {
       final fast2SmsResult = await _sendViaFast2Sms(phone, otp, defaultFast2SmsKey);
       if (fast2SmsResult.success) {
@@ -333,9 +315,9 @@ class SmsService {
     } catch (_) {}
 
     return SmsResult(
-      success: true,
-      isSimulated: true,
-      message: 'Verification code sent to +91 $phone',
+      success: false,
+      isSimulated: false,
+      message: nativeError.isNotEmpty ? nativeError : 'Unable to dispatch SMS to +91 $phone',
     );
   }
 

@@ -300,12 +300,12 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                                 messenger.showSnackBar(
                                   SnackBar(
                                     content: Text(smsResult.success
-                                        ? 'Verification code sent to ${widget.phoneNumber}'
+                                        ? 'Verification code resent to ${widget.phoneNumber}'
                                         : (smsResult.message.isNotEmpty
                                             ? smsResult.message
-                                            : 'Verification code resent successfully.')),
-                                    backgroundColor: smsResult.success ? AppColors.primary : AppColors.busyOrange,
-                                    duration: const Duration(seconds: 3),
+                                            : 'Failed to resend code. Please try again.')),
+                                    backgroundColor: smsResult.success ? AppColors.primary : AppColors.errorRed,
+                                    duration: const Duration(seconds: 4),
                                   ),
                                 );
                               },

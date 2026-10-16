@@ -62,15 +62,36 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
     if (mounted) {
       setState(() => _isSending = false);
 
+      if (!smsResult.success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline_rounded, color: Colors.white, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    smsResult.message.isNotEmpty
+                        ? smsResult.message
+                        : 'Failed to send verification code. Please try again.',
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: AppColors.errorRed,
+            duration: const Duration(seconds: 5),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
+
       // Safe clean notification - NEVER reveals OTP code in UI popup
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(smsResult.success
-              ? 'Verification code sent to $formattedPhone'
-              : (smsResult.message.isNotEmpty
-                  ? smsResult.message
-                  : 'Verification code sent to your mobile number.')),
-          backgroundColor: smsResult.success ? AppColors.primary : AppColors.errorRed,
+          content: Text('Verification code sent to $formattedPhone'),
+          backgroundColor: AppColors.primary,
           duration: const Duration(seconds: 4),
         ),
       );

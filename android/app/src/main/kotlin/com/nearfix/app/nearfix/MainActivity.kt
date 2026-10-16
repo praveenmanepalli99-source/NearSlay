@@ -92,6 +92,7 @@ class MainActivity: FlutterActivity() {
                             FirebaseApp.initializeApp(this)
                         }
                         val auth = FirebaseAuth.getInstance()
+                        auth.useAppLanguage()
                         var callbackDispatched = false
 
                         val callbacks = object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
@@ -127,13 +128,17 @@ class MainActivity: FlutterActivity() {
                             }
 
                             override fun onVerificationFailed(e: FirebaseException) {
-                                android.util.Log.e("NearFixAuth", "onVerificationFailed: ${e.localizedMessage}", e)
+                                val errType = (e as? com.google.firebase.auth.FirebaseAuthException)?.errorCode ?: e.javaClass.simpleName
+                                val errMsg = e.localizedMessage ?: "Firebase verification failed"
+                                val fullMsg = "$errType: $errMsg"
+                                android.util.Log.e("NearFixAuth", "onVerificationFailed: $fullMsg", e)
                                 if (!callbackDispatched) {
                                     callbackDispatched = true
                                     runOnUiThread {
                                         result.success(mapOf(
                                             "success" to false,
-                                            "message" to (e.localizedMessage ?: "Firebase verification failed")
+                                            "message" to fullMsg,
+                                            "errorCode" to errType
                                         ))
                                     }
                                 }
@@ -158,6 +163,12 @@ class MainActivity: FlutterActivity() {
                                         ))
                                     }
                                 }
+                            }
+
+                            override fun onCodeAutoRetrievalTimeOut(verificationId: String) {
+                                android.util.Log.d("NearFixAuth", "onCodeAutoRetrievalTimeOut: $verificationId")
+                                staticVerificationId = verificationId
+                                prefs.edit().putString(KEY_VERIFICATION_ID, verificationId).apply()
                             }
                         }
 

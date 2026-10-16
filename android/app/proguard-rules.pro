@@ -45,3 +45,6 @@
 -keepclassmembers class * {
     @com.google.gson.annotations.SerializedName <fields>;
 }
+
+# 7. Play Core / Deferred Components (Required by Flutter engine in AGP 8.x)
+-dontwarn com.google.android.play.core.**

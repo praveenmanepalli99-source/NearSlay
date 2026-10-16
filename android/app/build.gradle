@@ -32,8 +32,8 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.nearfix.app.nearfix"
-    compileSdk = 34
-    ndkVersion = flutter.ndkVersion
+    compileSdk = 36
+    ndkVersion = "26.1.10909125"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -47,7 +47,7 @@ android {
     defaultConfig {
         applicationId = "com.nearfix.app.nearfix"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 36
         versionCode = flutterVersionCode.toInteger()
         versionName = flutterVersionName
         multiDexEnabled = true

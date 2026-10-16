@@ -21,6 +21,10 @@
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="false"
         android:extractNativeLibs="false">
+        <property
+            android:name="android.app.16kb_page_size"
+            android:value="true" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

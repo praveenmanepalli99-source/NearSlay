@@ -98,8 +98,24 @@ class NearFixState extends ChangeNotifier {
   int get activeRadiusKm => _activeRadiusKm;
   bool get isRadiusExpandedTo10Km => _isRadiusExpandedTo10Km;
 
-  /// Smart location-based filtered providers (5km primary, auto-expands to 10km if none found)
+  List<ProviderModel>? _cachedFilteredProviders;
+
+  @override
+  void notifyListeners() {
+    _cachedFilteredProviders = null;
+    super.notifyListeners();
+  }
+
+  /// Smart location-based filtered providers (cached for 60-120fps smooth scrolling)
   List<ProviderModel> get filteredProviders {
+    if (_cachedFilteredProviders != null) {
+      return _cachedFilteredProviders!;
+    }
+    _cachedFilteredProviders = _computeFilteredProviders();
+    return _cachedFilteredProviders!;
+  }
+
+  List<ProviderModel> _computeFilteredProviders() {
     final isResidentBrowsing = _activeRole == AppRole.resident;
     final selfPhone = isResidentBrowsing
         ? _cleanPhone(_verifiedPhone.isNotEmpty ? _verifiedPhone : (_currentUser?.phone ?? ''))
@@ -428,11 +444,10 @@ class NearFixState extends ChangeNotifier {
     _isSessionLoaded = true;
     notifyListeners();
 
-    // Trigger cloud synchronization immediately
-    await syncWithCloud();
-
-    // Auto-detect live GPS location on startup
-    detectLiveGpsLocation(silent: true);
+    // Trigger cloud synchronization and GPS detection asynchronously in background
+    // so the initial UI renders instantly with cached local data
+    unawaited(syncWithCloud());
+    unawaited(detectLiveGpsLocation(silent: true));
   }
 
   void _ensureColonyInList(ColonyModel colony) {

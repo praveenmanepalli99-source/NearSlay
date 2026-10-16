@@ -303,11 +303,19 @@ class FirebaseService {
     bool fbSuccess = false;
     const rtdb = FirebaseConfig.defaultFirebaseRealtimeDbUrl;
 
-    // 1. Fetch authoritatively from Google Firebase Realtime Database (24/7 Cloud)
+    // 1. Fetch authoritatively from Google Firebase Realtime Database (24/7 Cloud) in parallel
     try {
-      final resProv = await http
-          .get(Uri.parse('$rtdb/providers.json'), headers: _headers)
-          .timeout(const Duration(milliseconds: 4000));
+      final results = await Future.wait([
+        http
+            .get(Uri.parse('$rtdb/providers.json'), headers: _headers)
+            .timeout(const Duration(milliseconds: 3500)),
+        http
+            .get(Uri.parse('$rtdb/residents.json'), headers: _headers)
+            .timeout(const Duration(milliseconds: 3500)),
+      ]);
+      final resProv = results[0];
+      final resUser = results[1];
+
       if (resProv.statusCode == 200 && resProv.body.isNotEmpty && resProv.body.trim() != 'null') {
         final decoded = jsonDecode(resProv.body);
         if (decoded is List) {
@@ -323,10 +331,6 @@ class FirebaseService {
       } else if (resProv.statusCode == 200) {
         fbSuccess = true;
       }
-
-      final resUser = await http
-          .get(Uri.parse('$rtdb/residents.json'), headers: _headers)
-          .timeout(const Duration(milliseconds: 4000));
       if (resUser.statusCode == 200 && resUser.body.isNotEmpty && resUser.body.trim() != 'null') {
         final decoded = jsonDecode(resUser.body);
         if (decoded is List) {

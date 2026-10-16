@@ -60,6 +60,18 @@
   "residents": [
     {
       "avatarUrl": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200",
+      "city": "Palwancha",
+      "colonyId": "colony_648312168",
+      "colonyName": "KTPS",
+      "flatAddress": "Rahul Gandhi nagar",
+      "id": "user_1792146011340",
+      "isPurchaser": false,
+      "name": "Sridevi",
+      "phone": "+91 9640802522",
+      "rewardCoins": 0
+    },
+    {
+      "avatarUrl": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200",
       "city": "New York",
       "colonyId": "colony_905141411",
       "colonyName": "Green Park",

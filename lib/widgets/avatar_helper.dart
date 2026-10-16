@@ -20,6 +20,8 @@ class AvatarHelper {
     'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200',
   ];
 
+  static final Map<String, ImageProvider> _imageCache = {};
+
   /// Returns the appropriate ImageProvider based on whether the string is a URL, Base64, or File path
   static ImageProvider getImageProvider(String? avatarUrl) {
     if (avatarUrl == null || avatarUrl.trim().isEmpty) {
@@ -27,34 +29,42 @@ class AvatarHelper {
     }
 
     final trimmed = avatarUrl.trim();
+    if (_imageCache.containsKey(trimmed)) {
+      return _imageCache[trimmed]!;
+    }
 
+    ImageProvider provider;
     // 1. Base64 Data URI or raw Base64 string
     if (trimmed.startsWith('data:image/') || (trimmed.length > 200 && !trimmed.startsWith('http') && !trimmed.startsWith('/'))) {
       try {
         final commaIndex = trimmed.indexOf(',');
         final base64String = commaIndex != -1 ? trimmed.substring(commaIndex + 1) : trimmed;
-        return MemoryImage(base64Decode(base64String));
+        provider = MemoryImage(base64Decode(base64String));
       } catch (_) {
-        return const NetworkImage(defaultAvatar);
+        provider = const NetworkImage(defaultAvatar);
       }
-    }
-
-    // 2. HTTP/HTTPS Network URL
-    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
-      return NetworkImage(trimmed);
-    }
-
-    // 3. Local File Path (non-web only)
-    if (!kIsWeb) {
+    } else if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      provider = NetworkImage(trimmed);
+    } else if (!kIsWeb) {
       try {
         final file = File(trimmed);
         if (file.existsSync()) {
-          return FileImage(file);
+          provider = FileImage(file);
+        } else {
+          provider = const NetworkImage(defaultAvatar);
         }
-      } catch (_) {}
+      } catch (_) {
+        provider = const NetworkImage(defaultAvatar);
+      }
+    } else {
+      provider = const NetworkImage(defaultAvatar);
     }
 
-    return const NetworkImage(defaultAvatar);
+    if (_imageCache.length > 100) {
+      _imageCache.clear();
+    }
+    _imageCache[trimmed] = provider;
+    return provider;
   }
 
   /// Show image picker bottom sheet allowing user to choose from Gallery, Camera, or Presets

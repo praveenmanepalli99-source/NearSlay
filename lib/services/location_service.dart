@@ -158,10 +158,11 @@ class LocationService {
         return null;
       }
 
-      // Get current GPS position
-      final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 8),
+      // Fast GPS position: query instant last-known cached position first (resolves in ~2ms)
+      Position? position = await Geolocator.getLastKnownPosition();
+      position ??= await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.medium,
+        timeLimit: const Duration(seconds: 4),
       );
 
       String colonyName = 'My Live Location';

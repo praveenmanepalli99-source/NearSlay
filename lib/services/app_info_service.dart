@@ -5,8 +5,8 @@ import 'package:flutter/services.dart';
 class AppInfoService {
   static const MethodChannel _channel = MethodChannel('com.nearfix.app/app_info');
 
-  static const String currentVersion = '1.0.39';
-  static const String currentBuildNumber = '44';
+  static const String currentVersion = '1.0.40';
+  static const String currentBuildNumber = '45';
 
   /// Returns a map containing 'version' and 'buildNumber'
   static Future<Map<String, String>> getAppInfo() async {

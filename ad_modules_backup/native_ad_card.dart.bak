@@ -1,0 +1,228 @@
+import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../services/ad_service.dart';
+import '../services/remote_config_service.dart';
+import '../theme/app_colors.dart';
+
+/// Native Ad Card dynamically formatted to blend in with service provider profiles
+class NativeAdCard extends StatefulWidget {
+  final EdgeInsetsGeometry margin;
+  final String fallbackHeadline;
+  final String fallbackBody;
+  final String fallbackCta;
+
+  const NativeAdCard({
+    super.key,
+    this.margin = const EdgeInsets.only(bottom: 12),
+    this.fallbackHeadline = 'EcoPro Pest & Termite Control',
+    this.fallbackBody = 'Certified herbal spray • 100% odorless & child-safe • Colony discounts available',
+    this.fallbackCta = 'Book Now',
+  });
+
+  @override
+  State<NativeAdCard> createState() => _NativeAdCardState();
+}
+
+class _NativeAdCardState extends State<NativeAdCard> {
+  NativeAd? _nativeAd;
+  bool _isAdLoaded = false;
+  bool _isAdFailed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNativeAd();
+  }
+
+  void _loadNativeAd() {
+    if (!RemoteConfigService.instance.showAds) return;
+
+    if (AdService.instance.isMobilePlatform) {
+      _nativeAd = AdService.instance.createNativeAd(
+        onAdLoaded: () {
+          if (mounted) {
+            setState(() {
+              _isAdLoaded = true;
+              _isAdFailed = false;
+            });
+          }
+        },
+        onAdFailedToLoad: () {
+          if (mounted) {
+            setState(() {
+              _isAdLoaded = false;
+              _isAdFailed = true;
+            });
+          }
+        },
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _nativeAd?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // 1. If ads are disabled via Firebase Remote Config (Purchasers / VIP), completely hide
+    if (!RemoteConfigService.instance.showAds) {
+      return const SizedBox.shrink();
+    }
+
+    // 2. If native ad successfully loaded on mobile device, render Google AdWidget
+    if (_isAdLoaded && _nativeAd != null) {
+      return Container(
+        margin: widget.margin,
+        height: 100,
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.amber.withOpacity(0.4), width: 1.2),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: AdWidget(ad: _nativeAd!),
+        ),
+      );
+    }
+
+    // 3. If ad failed on device and not in debug, hide cleanly
+    if (_isAdFailed && AdService.instance.isMobilePlatform) {
+      return const SizedBox.shrink();
+    }
+
+    // 4. Inlined Native Ad Card (Blends seamlessly with NearFix Provider Cards)
+    return Container(
+      margin: widget.margin,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.amber.shade300, width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.amber.withOpacity(0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header: Sponsor Badge + Star Rating
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.amber.shade100,
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: Colors.amber.shade400, width: 0.8),
+                ),
+                child: Text(
+                  'Sponsored Ad',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.amber.shade900,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Icon(Icons.star_rounded, size: 14, color: Colors.amber),
+              const SizedBox(width: 2),
+              const Text(
+                '4.9 (500+ booked)',
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textSecondary),
+              ),
+              const Spacer(),
+              const Icon(Icons.verified_rounded, size: 16, color: Color(0xFF2563EB)),
+            ],
+          ),
+          const SizedBox(height: 10),
+
+          // Body: Icon, Headline & Info
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.campaign_rounded, color: Colors.white, size: 24),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.fallbackHeadline,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      widget.fallbackBody,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 11.5,
+                        color: AppColors.textSecondary,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  minimumSize: const Size(70, 34),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  elevation: 0,
+                ),
+                onPressed: () async {
+                  final uri = Uri.parse('https://nearslay-default-rtdb.firebaseio.com');
+                  try {
+                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                  } catch (_) {}
+                },
+                child: Text(
+                  widget.fallbackCta,
+                  style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}

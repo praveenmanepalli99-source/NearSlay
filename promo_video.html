@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NearFix - Ultra-Stylish 30s Promo Video</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+  body {
+    background: #060913;
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(0, 135, 90, 0.25) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(14, 165, 233, 0.2) 0px, transparent 50%),
+      radial-gradient(at 50% 50%, rgba(15, 23, 42, 1) 0px, transparent 100%);
+    color: #f8fafc;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    overflow-x: hidden;
+  }
+  .header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0, 135, 90, 0.15);
+    border: 1px solid rgba(0, 135, 90, 0.4);
+    color: #34d399;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+  }
+  .header h1 {
+    font-size: 30px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, #ffffff 30%, #34d399 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .header p {
+    font-size: 13.5px;
+    color: #94a3b8;
+    margin-top: 4px;
+  }
+  .stage-outer {
+    position: relative;
+    padding: 12px;
+    background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+    border-radius: 54px;
+    box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.9), 0 0 40px rgba(0, 135, 90, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+  .stage-wrapper {
+    position: relative;
+    width: 380px;
+    height: 760px;
+    background: #020617;
+    border-radius: 46px;
+    overflow: hidden;
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.1);
+  }
+  canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .controls {
+    margin-top: 24px;
+    display: flex;
+    gap: 14px;
+    align-items: center;
+  }
+  .btn {
+    background: linear-gradient(135deg, #00875a, #059669);
+    color: #fff;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 14px;
+    font-weight: 800;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 10px 25px -5px rgba(0, 135, 90, 0.5);
+  }
+  .btn:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 15px 30px -5px rgba(0, 135, 90, 0.7);
+  }
+  .btn.record {
+    background: linear-gradient(135deg, #e11d48, #be123c);
+    box-shadow: 0 10px 25px -5px rgba(225, 29, 72, 0.5);
+  }
+  .btn.record:hover {
+    box-shadow: 0 15px 30px -5px rgba(225, 29, 72, 0.7);
+  }
+  .progress-wrapper {
+    width: 380px;
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .progress-bar-container {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.08);
+    height: 6px;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .progress-bar {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #06b6d4);
+  }
+  .timeline-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11.5px;
+    color: #64748b;
+    font-weight: 600;
+  }
+  .voice-controls {
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 12.5px;
+    color: #94a3b8;
+  }
+  .voice-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    color: #34d399;
+    font-weight: 700;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="badge">🎙️ SYNCED AI VOICEOVER & 60 FPS MOTION</div>
+  <h1>NearFix Cinematic Promo Video</h1>
+  <p>Live Audio Narration • Dynamic 30s Tour • Tap Record to Export</p>
+</div>
+
+<div class="stage-outer">
+  <div class="stage-wrapper">
+    <canvas id="promoCanvas" width="760" height="1520"></canvas>
+  </div>
+</div>
+
+<div class="progress-wrapper">
+  <div class="progress-bar-container">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+  <div class="timeline-labels">
+    <span id="currentScene">Scene: Intro</span>
+    <span id="timerText">0.0s / 30.0s</span>
+  </div>
+</div>
+
+<div class="voice-controls">
+  <span class="voice-toggle" id="voiceToggle">🔊 AI Voiceover: <b>ON</b></span>
+  <span>|</span>
+  <span id="voiceStatus">Natural Narration Active</span>
+</div>
+
+<div class="controls">
+  <button class="btn" id="playBtn">▶ Play with Voiceover</button>
+  <button class="btn record" id="recordBtn">⏺ Record & Save Video</button>
+</div>
+
+<script>
+const canvas = document.getElementById('promoCanvas');
+const ctx = canvas.getContext('2d');
+const W = canvas.width;
+const H = canvas.height;
+
+let isPlaying = false;
+let isRecording = false;
+let startTime = 0;
+const DURATION = 30.0;
+
+const logoImg = new Image();
+logoImg.src = 'assets/images/logo.png';
+
+// Ambient Background Particles
+const particles = [];
+for (let i = 0; i < 45; i++) {
+  particles.push({
+    x: Math.random() * W,
+    y: Math.random() * H,
+    radius: Math.random() * 3 + 1,
+    speedX: (Math.random() - 0.5) * 0.8,
+    speedY: (Math.random() - 0.5) * 0.8,
+    alpha: Math.random() * 0.4 + 0.1
+  });
+}
+
+// Confetti burst for verified OTP
+const confetti = [];
+function createConfetti() {
+  for (let i = 0; i < 60; i++) {
+    confetti.push({
+      x: W/2,
+      y: 920,
+      vx: (Math.random() - 0.5) * 22,
+      vy: -Math.random() * 20 - 5,
+      color: ['#00875a', '#10b981', '#34d399', '#f59e0b', '#38bdf8'][Math.floor(Math.random()*5)],
+      size: Math.random() * 10 + 6,
+      rot: Math.random() * 360,
+      vRot: (Math.random() - 0.5) * 15,
+      alpha: 1
+    });
+  }
+}
+
+function easeOutBack(x) {
+  const c1 = 1.70158;
+  const c3 = c1 + 1;
+  return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2);
+}
+
+function easeOutCubic(x) {
+  return 1 - Math.pow(1 - x, 3);
+}
+
+function easeInOutQuad(x) {
+  return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
+}
+
+function drawRoundedRect(ctx, x, y, width, height, radius, fill, stroke, strokeWidth=1, shadowColor=null, shadowBlur=0) {
+  ctx.save();
+  if (shadowColor && shadowBlur > 0) {
+    ctx.shadowColor = shadowColor;
+    ctx.shadowBlur = shadowBlur;
+    ctx.shadowOffsetY = shadowBlur / 3;
+  }
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + width - radius, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+  ctx.lineTo(x + width, y + height - radius);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+  ctx.lineTo(x + radius, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+  ctx.closePath();
+  if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+  if (stroke) { ctx.lineWidth = strokeWidth; ctx.strokeStyle = stroke; ctx.stroke(); }
+  ctx.restore();
+}
+
+function drawTouchRipple(x, y, progress) {
+  if (progress <= 0 || progress >= 1) return;
+  ctx.save();
+  const radius = progress * 70;
+  const alpha = 1 - progress;
+  ctx.strokeStyle = `rgba(0, 135, 90, ${alpha * 0.8})`;
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.fillStyle = `rgba(0, 135, 90, ${alpha * 0.25})`;
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawSubtitlePill(text, subtext) {
+  const py = H - 140;
+  drawRoundedRect(ctx, 40, py, W - 80, 95, 26, 'rgba(15, 23, 42, 0.92)', 'rgba(51, 65, 85, 0.8)', 2, 'rgba(0,0,0,0.5)', 25);
+  
+  ctx.fillStyle = '#34d399';
+  ctx.font = 'bold 22px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('⚡ ' + text, 70, py + 40);
+
+  ctx.fillStyle = '#cbd5e1';
+  ctx.font = '18px sans-serif';
+  ctx.fillText(subtext, 70, py + 74);
+}
+
+function drawPhoneChassis(t) {
+  // Clear
+  ctx.fillStyle = '#f8fafc';
+  ctx.fillRect(0, 0, W, H);
+
+  // Background Ambient Particles
+  for (let p of particles) {
+    p.x += p.speedX;
+    p.y += p.speedY;
+    if (p.x < 0) p.x = W;
+    if (p.x > W) p.x = 0;
+    if (p.y < 0) p.y = H;
+    if (p.y > H) p.y = 0;
+
+    ctx.fillStyle = `rgba(0, 135, 90, ${p.alpha})`;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Dynamic Island Notch
+  drawRoundedRect(ctx, (W - 220)/2, 22, 220, 52, 26, '#090d16', null, 0);
+  
+  // Camera & Sensor
+  ctx.fillStyle = '#1e293b';
+  ctx.beginPath();
+  ctx.arc(W/2 + 65, 48, 8, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Island Content Pulse
+  ctx.fillStyle = '#10b981';
+  ctx.beginPath();
+  ctx.arc(W/2 - 70, 48, 6, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('NearFix Live', W/2 - 50, 54);
+
+  // Status time
+  ctx.fillStyle = '#0f172a';
+  ctx.font = '900 24px sans-serif';
+  ctx.fillText('9:41', 52, 56);
+}
+
+function renderScene(t) {
+  drawPhoneChassis(t);
+
+  if (t < 6.0) {
+    // ==========================================
+    // SCENE 1: CINEMATIC SPLASH & PHONE LOGIN (0s - 6s)
+    // ==========================================
+    document.getElementById('currentScene').innerText = 'Scene 1: Splash & Login';
+    const sceneT = t;
+
+    // Glowing Aura
+    const auraAlpha = 0.25 + 0.1 * Math.sin(sceneT * 4);
+    const grad = ctx.createRadialGradient(W/2, 380, 20, W/2, 380, 360);
+    grad.addColorStop(0, `rgba(0, 135, 90, ${auraAlpha})`);
+    grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 90, W, 700);
+
+    // Bouncy Logo Entrance
+    const logoProg = Math.min(1, sceneT / 1.0);
+    const logoScale = easeOutBack(logoProg);
+    const logoSize = 210;
+
+    ctx.save();
+    ctx.translate(W/2, 350);
+    ctx.scale(logoScale, logoScale);
+    if (logoImg.complete && logoImg.naturalWidth !== 0) {
+      ctx.drawImage(logoImg, -logoSize/2, -logoSize/2, logoSize, logoSize);
+    }
+    ctx.restore();
+
+    // App Name & Tagline Stagger
+    const textProg = Math.max(0, Math.min(1, (sceneT - 0.6) / 0.8));
+    const textEase = easeOutCubic(textProg);
+    ctx.save();
+    ctx.globalAlpha = textProg;
+    ctx.translate(0, 30 * (1 - textEase));
+
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '900 58px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('NearFix', W/2, 530);
+
+    ctx.fillStyle = '#00875a';
+    ctx.font = '800 24px sans-serif';
+    ctx.fillText('COLONY REPAIR NETWORK', W/2, 570);
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = '600 20px sans-serif';
+    ctx.fillText('Instant Plumber • Electrician • Mechanic', W/2, 605);
+    ctx.restore();
+
+    // Input Card Slide-Up
+    const cardProg = Math.max(0, Math.min(1, (sceneT - 1.2) / 0.8));
+    const cardEase = easeOutBack(cardProg);
+    const cardY = 1200 - (1200 - 680) * cardEase;
+
+    ctx.save();
+    ctx.globalAlpha = cardProg;
+    drawRoundedRect(ctx, 45, cardY, W - 90, 320, 34, '#ffffff', 'rgba(0,135,90,0.15)', 2, 'rgba(0,0,0,0.08)', 30);
+
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '800 26px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('Enter Mobile Number', 85, cardY + 60);
+
+    // Number Box
+    drawRoundedRect(ctx, 85, cardY + 90, W - 170, 75, 20, '#f8fafc', '#cbd5e1', 2);
+    
+    // Typing text
+    const numProg = Math.max(0, Math.min(1, (sceneT - 2.2) / 1.5));
+    const fullPhone = '+91 98450 11223';
+    const currPhone = fullPhone.substring(0, Math.floor(4 + (fullPhone.length - 4) * numProg));
+
+    ctx.fillStyle = '#0f172a';
+    ctx.font = 'bold 30px monospace';
+    ctx.fillText(currPhone, 115, cardY + 138);
+
+    // Cursor Blink
+    if (Math.floor(sceneT * 4) % 2 === 0 && numProg < 1) {
+      ctx.fillStyle = '#00875a';
+      ctx.fillRect(115 + ctx.measureText(currPhone).width + 4, cardY + 110, 4, 34);
+    }
+
+    // Submit Button Tap Effect
+    const isBtnTapped = sceneT > 4.4;
+    const btnScale = isBtnTapped ? 0.95 : 1.0;
+    
+    ctx.save();
+    ctx.translate(W/2, cardY + 230);
+    ctx.scale(btnScale, btnScale);
+    drawRoundedRect(ctx, -(W - 170)/2, -35, W - 170, 70, 20, 'linear-gradient(135deg, #00875a, #059669)', null, 0, 'rgba(0,135,90,0.4)', 20);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 24px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Get OTP Verification Code →', 0, 8);
+    ctx.restore();
+
+    if (sceneT > 4.4 && sceneT < 5.2) {
+      drawTouchRipple(W/2, cardY + 230, (sceneT - 4.4) / 0.8);
+    }
+    ctx.restore();
+
+    // Footer Creator
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '700 20px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Made by Praveen Manepalli', W/2, 1070);
+
+    drawSubtitlePill('Hassle-Free Mobile Login', 'Zero passwords • Instant colony detection');
+
+  } else if (t < 12.0) {
+    // ==========================================
+    // SCENE 2: ONE-CLICK OTP VERIFICATION (6s - 12s)
+    // ==========================================
+    document.getElementById('currentScene').innerText = 'Scene 2: One-Click OTP';
+    const sceneT = t - 6.0;
+
+    // Header Back & Title
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '900 36px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Verify Mobile OTP', W/2, 160);
+
+    // Logo Avatar
+    if (logoImg.complete && logoImg.naturalWidth !== 0) {
+      ctx.drawImage(logoImg, (W - 120)/2, 200, 120, 120);
+    }
+
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '900 36px sans-serif';
+    ctx.fillText('Verification Code', W/2, 380);
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = '600 22px sans-serif';
+    ctx.fillText('Sent 6-digit OTP to +91 98450 11223', W/2, 420);
+
+    // Pulsing Auto-Fill Banner
+    const bannerProg = Math.min(1, sceneT / 0.8);
+    const bannerScale = easeOutBack(bannerProg);
+    const pulse = 1 + 0.03 * Math.sin(sceneT * 6);
+
+    ctx.save();
+    ctx.translate(W/2, 520);
+    ctx.scale(bannerScale * pulse, bannerScale * pulse);
+    drawRoundedRect(ctx, -(W - 120)/2, -55, W - 120, 110, 26, '#ecfdf5', '#10b981', 3, 'rgba(16,185,129,0.3)', 20);
+
+    ctx.fillStyle = '#065f46';
+    ctx.font = '900 30px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('⚡ OTP: 112233', 0, -12);
+
+    ctx.fillStyle = '#047857';
+    ctx.font = '700 20px sans-serif';
+    ctx.fillText('Tap here to auto-fill & verify instantly', 0, 26);
+    ctx.restore();
+
+    // Tap Ripple on OTP Banner
+    if (sceneT > 1.8 && sceneT < 2.8) {
+      drawTouchRipple(W/2, 520, (sceneT - 1.8) / 1.0);
+    }
+
+    // 6 OTP Digit Boxes Pop in Sequentially
+    const isAutoFilled = sceneT > 2.2;
+    const digits = ['1','1','2','2','3','3'];
+
+    for (let i = 0; i < 6; i++) {
+      const bx = 65 + i * 105;
+      const digitProg = isAutoFilled ? Math.min(1, (sceneT - 2.2 - i * 0.1) / 0.3) : 0;
+      const isFilled = digitProg > 0.5;
+
+      drawRoundedRect(
+        ctx, bx, 640, 90, 105, 20, 
+        isFilled ? '#f0fdf4' : '#ffffff', 
+        isFilled ? '#10b981' : '#cbd5e1', 
+        isFilled ? 3 : 2,
+        isFilled ? 'rgba(16,185,129,0.3)' : null, 15
+      );
+
+      ctx.fillStyle = isFilled ? '#065f46' : '#94a3b8';
+      ctx.font = '900 46px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(isFilled ? digits[i] : '•', bx + 45, 712);
+    }
+
+    // Trigger Confetti on Auto-Fill
+    if (sceneT > 3.0 && confetti.length === 0) {
+      createConfetti();
+    }
+
+    // Verify Button Success Transition
+    const btnY = 820;
+    const isVerified = sceneT > 3.2;
+
+    drawRoundedRect(
+      ctx, 65, btnY, W - 130, 85, 24, 
+      isVerified ? '#00875a' : '#00875a', 
+      null, 0, 
+      'rgba(0,135,90,0.5)', 25
+    );
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 28px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(isVerified ? '✅ Verified & Authenticated!' : 'Verify OTP', W/2, btnY + 54);
+
+    // Confetti physics
+    for (let c of confetti) {
+      c.x += c.vx;
+      c.y += c.vy;
+      c.vy += 0.8; // gravity
+      c.rot += c.vRot;
+      c.alpha = Math.max(0, c.alpha - 0.015);
+
+      ctx.save();
+      ctx.globalAlpha = c.alpha;
+      ctx.translate(c.x, c.y);
+      ctx.rotate(c.rot * Math.PI / 180);
+      ctx.fillStyle = c.color;
+      ctx.fillRect(-c.size/2, -c.size/2, c.size, c.size * 0.6);
+      ctx.restore();
+    }
+
+    drawSubtitlePill('1-Tap Test Authentication', 'Quick auto-fill banner & instant cloud verification');
+
+  } else if (t < 20.0) {
+    // ==========================================
+    // SCENE 3: LIVE COLONY & 5KM-10KM PROVIDERS (12s - 20s)
+    // ==========================================
+    document.getElementById('currentScene').innerText = 'Scene 3: Colony Matching';
+    const sceneT = t - 12.0;
+
+    // Header GPS Location Bar with Radar Pulse
+    const barProg = Math.min(1, sceneT / 0.6);
+    const barY = 80 - 40 * (1 - easeOutCubic(barProg));
+
+    drawRoundedRect(ctx, 35, barY, W - 70, 95, 26, '#ffffff', 'rgba(0,135,90,0.2)', 2, 'rgba(0,0,0,0.06)', 20);
+
+    // Radar Wave
+    const radar = (sceneT * 2) % 1;
+    ctx.save();
+    ctx.strokeStyle = `rgba(0, 135, 90, ${1 - radar})`;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(75, barY + 48, 16 + radar * 24, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.fillStyle = '#00875a';
+    ctx.font = '900 28px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('📍 Green Glen Layout', 105, barY + 44);
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = '600 20px sans-serif';
+    ctx.fillText('Bengaluru • GPS Auto-Detected (5km Range)', 105, barY + 76);
+
+    // Category Tabs Spring In
+    const cats = [
+      { name: 'All', icon: '⚡' },
+      { name: 'Plumber', icon: '🔧' },
+      { name: 'Electrician', icon: '💡' },
+      { name: 'Mechanic', icon: '🚗' }
+    ];
+
+    const activeCat = sceneT > 2.5 ? 1 : 0;
+    for (let i = 0; i < cats.length; i++) {
+      const cx = 35 + i * 175;
+      const isSel = i === activeCat;
+      const catProg = Math.min(1, Math.max(0, (sceneT - 0.4 - i * 0.1) / 0.5));
+      const catScale = easeOutBack(catProg);
+
+      ctx.save();
+      ctx.translate(cx + 80, 220);
+      ctx.scale(catScale, catScale);
+      drawRoundedRect(
+        ctx, -80, -30, 160, 60, 20, 
+        isSel ? '#00875a' : '#ffffff', 
+        isSel ? null : '#e2e8f0', 2,
+        isSel ? 'rgba(0,135,90,0.4)' : null, 15
+      );
+      ctx.fillStyle = isSel ? '#ffffff' : '#334155';
+      ctx.font = 'bold 20px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(cats[i].icon + ' ' + cats[i].name, 0, 7);
+      ctx.restore();
+    }
+
+    if (sceneT > 2.5 && sceneT < 3.3) {
+      drawTouchRipple(35 + 175 + 80, 220, (sceneT - 2.5) / 0.8);
+    }
+
+    // Staggered Provider Cards
+    const providers = [
+      { name: 'Ramesh Kumar', role: 'Master Plumber', rate: '₹350/hr', status: 'AVAILABLE', dist: '1.2 km away', exp: '8 yrs exp' },
+      { name: 'Suresh Electrician', role: 'Certified Electrician', rate: '₹300/hr', status: 'AVAILABLE', dist: '2.4 km away', exp: '5 yrs exp' },
+      { name: 'Anil Mechanic', role: 'Car & Bike Specialist', rate: '₹400/hr', status: 'AVAILABLE', dist: '3.8 km away', exp: '10 yrs exp' }
+    ];
+
+    for (let i = 0; i < providers.length; i++) {
+      const p = providers[i];
+      const cardDelay = 0.8 + i * 0.25;
+      const cardProg = Math.min(1, Math.max(0, (sceneT - cardDelay) / 0.6));
+      const cardEase = easeOutCubic(cardProg);
+      const py = 290 + i * 200 + 50 * (1 - cardEase);
+
+      ctx.save();
+      ctx.globalAlpha = cardProg;
+      drawRoundedRect(ctx, 35, py, W - 70, 175, 28, '#ffffff', 'rgba(0,135,90,0.12)', 2, 'rgba(0,0,0,0.06)', 25);
+
+      // Avatar Circle
+      drawRoundedRect(ctx, 60, py + 30, 85, 85, 24, '#e3f7ec', null, 0);
+      ctx.fillStyle = '#00875a';
+      ctx.font = '900 36px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(p.name[0], 60 + 42, py + 86);
+
+      // Details
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#0f172a';
+      ctx.font = '900 28px sans-serif';
+      ctx.fillText(p.name, 165, py + 62);
+
+      ctx.fillStyle = '#64748b';
+      ctx.font = '600 20px sans-serif';
+      ctx.fillText(p.role + ' • ' + p.exp, 165, py + 95);
+
+      // Hourly Rate
+      ctx.fillStyle = '#00875a';
+      ctx.font = '900 26px sans-serif';
+      ctx.fillText(p.rate, 165, py + 140);
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '600 18px sans-serif';
+      ctx.fillText('(' + p.dist + ')', 290, py + 140);
+
+      // Available Green Badge
+      drawRoundedRect(ctx, W - 230, py + 38, 140, 42, 14, '#dcfce7', '#10b981', 2);
+      ctx.fillStyle = '#065f46';
+      ctx.font = '800 17px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('● AVAILABLE', W - 160, py + 65);
+
+      // Direct Call Button
+      drawRoundedRect(ctx, W - 190, py + 100, 100, 50, 16, '#00875a', null, 0, 'rgba(0,135,90,0.3)', 15);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '800 20px sans-serif';
+      ctx.fillText('📞 Call', W - 140, py + 132);
+      ctx.restore();
+    }
+
+    drawSubtitlePill('5km to 10km Colony Matching', 'Shows verified nearby technicians with live availability');
+
+  } else if (t < 26.0) {
+    // ==========================================
+    // SCENE 4: GEMINI AI DIAGNOSTIC & PROFILE (20s - 26s)
+    // ==========================================
+    document.getElementById('currentScene').innerText = 'Scene 4: Gemini AI Diagnostic';
+    const sceneT = t - 20.0;
+
+    // AI Cosmic Glow Card
+    const aiProg = Math.min(1, sceneT / 0.7);
+    const aiEase = easeOutBack(aiProg);
+    const aiY = 100;
+
+    ctx.save();
+    ctx.scale(aiEase, aiEase);
+    ctx.translate(W/2 * (1 - aiEase), aiY * (1 - aiEase));
+
+    // Outer Shimmer Border
+    drawRoundedRect(ctx, 35, aiY, W - 70, 540, 36, '#090d16', 'rgba(16, 185, 129, 0.6)', 3, 'rgba(0, 135, 90, 0.4)', 35);
+
+    // AI Header
+    ctx.fillStyle = '#34d399';
+    ctx.font = '900 32px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('✨ Gemini AI Colony Diagnostic', 70, aiY + 70);
+
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '600 20px sans-serif';
+    ctx.fillText('Instant problem classification & repair tips', 70, aiY + 110);
+
+    // Problem Input Box
+    drawRoundedRect(ctx, 65, aiY + 140, W - 130, 95, 20, '#1e293b', 'rgba(255,255,255,0.1)', 1);
+    ctx.fillStyle = '#f8fafc';
+    ctx.font = '700 22px sans-serif';
+    ctx.fillText('"Water pipe burst heavily under kitchen sink"', 85, aiY + 196);
+
+    // AI Analysis Result (Sliding Up)
+    const resProg = Math.max(0, Math.min(1, (sceneT - 1.5) / 0.8));
+    const resEase = easeOutCubic(resProg);
+    
+    ctx.save();
+    ctx.globalAlpha = resProg;
+    drawRoundedRect(ctx, 65, aiY + 260, W - 130, 230, 24, 'rgba(0, 135, 90, 0.18)', '#10b981', 2);
+
+    ctx.fillStyle = '#34d399';
+    ctx.font = '900 24px sans-serif';
+    ctx.fillText('🔧 Problem: Urgent Pipe Burst Leak', 85, aiY + 310);
+
+    ctx.fillStyle = '#e2e8f0';
+    ctx.font = '600 20px sans-serif';
+    ctx.fillText('• Recommended: Turn off main supply stopcock immediately.', 85, aiY + 355);
+    ctx.fillText('• 3 Verified Plumbers available in Green Glen Layout.', 85, aiY + 395);
+    ctx.fillText('• Average Rate: ₹350 / hr (Estimated arrival: 10 mins).', 85, aiY + 435);
+    ctx.restore();
+    ctx.restore();
+
+    // Data Safety & Account Deletion Pill below
+    const safetyProg = Math.max(0, Math.min(1, (sceneT - 2.5) / 0.7));
+    ctx.save();
+    ctx.globalAlpha = safetyProg;
+    drawRoundedRect(ctx, 35, 680, W - 70, 360, 32, '#ffffff', 'rgba(0,135,90,0.2)', 2, 'rgba(0,0,0,0.06)', 20);
+
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '900 28px sans-serif';
+    ctx.fillText('Google Play Safety & Privacy', 70, 740);
+
+    drawRoundedRect(ctx, 65, 770, W - 130, 65, 16, '#f0fdf4', '#86efac', 1.5);
+    ctx.fillStyle = '#166534';
+    ctx.font = '800 20px sans-serif';
+    ctx.fillText('🛡️ Foreground GPS Only (No background tracking)', 90, 810);
+
+    drawRoundedRect(ctx, 65, 855, W - 130, 65, 16, '#fef2f2', '#fca5a5', 1.5);
+    ctx.fillStyle = '#991b1b';
+    ctx.font = '800 20px sans-serif';
+    ctx.fillText('🗑️ 1-Tap Permanent Account Deletion Option', 90, 895);
+
+    drawRoundedRect(ctx, 65, 940, W - 130, 65, 16, '#f8fafc', '#cbd5e1', 1.5);
+    ctx.fillStyle = '#334155';
+    ctx.font = '800 20px sans-serif';
+    ctx.fillText('🔒 Encrypted Local & Cloud Storage', 90, 980);
+    ctx.restore();
+
+    drawSubtitlePill('AI Diagnostics & Play Store Safety', 'Smart problem detection & full user privacy compliance');
+
+  } else {
+    // ==========================================
+    // SCENE 5: OUTRO & CALL TO ACTION (26s - 30s)
+    // ==========================================
+    document.getElementById('currentScene').innerText = 'Scene 5: Outro';
+    const sceneT = t - 26.0;
+
+    // Glowing Emerald Aura
+    const grad = ctx.createRadialGradient(W/2, 450, 40, W/2, 450, 480);
+    grad.addColorStop(0, '#e8f8f0');
+    grad.addColorStop(1, '#f8fafc');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+
+    // 3D Rotating Logo Sheen
+    const logoProg = Math.min(1, sceneT / 0.8);
+    const logoScale = easeOutBack(logoProg);
+    const logoSize = 250;
+
+    ctx.save();
+    ctx.translate(W/2, 340);
+    ctx.scale(logoScale, logoScale);
+    if (logoImg.complete && logoImg.naturalWidth !== 0) {
+      ctx.drawImage(logoImg, -logoSize/2, -logoSize/2, logoSize, logoSize);
+    }
+    ctx.restore();
+
+    // App Branding
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '900 68px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('NearFix', W/2, 530);
+
+    ctx.fillStyle = '#00875a';
+    ctx.font = '900 28px sans-serif';
+    ctx.fillText('Instant Colony Repair Network', W/2, 580);
+
+    // Feature Highlights Pills
+    const features = [
+      '✓ Verified Plumbers, Electricians & Mechanics',
+      '✓ GPS 5km to 10km Colony Auto-Matching',
+      '✓ Gemini AI Diagnostic Assistant',
+      '✓ 100% Direct Calls • Zero Commission'
+    ];
+
+    for (let i = 0; i < features.length; i++) {
+      const fProg = Math.min(1, Math.max(0, (sceneT - 0.5 - i * 0.15) / 0.5));
+      const fEase = easeOutCubic(fProg);
+      const fy = 650 + i * 70;
+
+      ctx.save();
+      ctx.globalAlpha = fProg;
+      drawRoundedRect(ctx, 45, fy, W - 90, 56, 18, '#ffffff', 'rgba(0,135,90,0.2)', 2, 'rgba(0,0,0,0.05)', 15);
+      ctx.fillStyle = '#1e293b';
+      ctx.font = '800 21px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(features[i], W/2, fy + 36);
+      ctx.restore();
+    }
+
+    // Play Store Button
+    const ctaY = 960;
+    drawRoundedRect(ctx, 55, ctaY, W - 110, 85, 26, '#090d16', null, 0, 'rgba(0,0,0,0.4)', 25);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 28px sans-serif';
+    ctx.fillText('Download on Android & Web 🚀', W/2, ctaY + 52);
+
+    // Creator Signature
+    ctx.fillStyle = '#64748b';
+    ctx.font = '800 22px sans-serif';
+    ctx.fillText('Made by Praveen Manepalli', W/2, 1085);
+
+    drawSubtitlePill('Download NearFix Today!', 'Your neighborhood’s trusted repair network');
+  }
+}
+
+let voiceEnabled = true;
+let currentUtterance = null;
+let spokenScenes = {};
+
+const narrationScript = {
+  scene1: "Welcome to NearFix! Enter your mobile number to connect with trusted neighborhood colony technicians with zero passwords.",
+  scene2: "Instant one-tap OTP auto-fill with secure cloud authentication.",
+  scene3: "Smart GPS auto-detects your residential colony and matches verified plumbers, electricians, and mechanics within 5 to 10 kilometers.",
+  scene4: "Gemini AI instantly diagnoses repair issues with full Google Play Store privacy and data safety compliance.",
+  scene5: "Download NearFix today for fast, verified colony repairs right at your doorstep. Made by Praveen Manepalli."
+};
+
+function speak(text) {
+  if (!voiceEnabled || !window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.rate = 1.05; // natural lively speed
+  utterance.pitch = 1.0;
+  
+  // Choose high quality English voice if available
+  const voices = window.speechSynthesis.getVoices();
+  const naturalVoice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Online')));
+  if (naturalVoice) utterance.voice = naturalVoice;
+
+  window.speechSynthesis.speak(utterance);
+}
+
+// Web Audio API UI Chimes
+let audioCtx = null;
+function playChime(freq=520, type='sine', duration=0.15) {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+  } catch(e) {}
+}
+
+document.getElementById('voiceToggle').addEventListener('click', () => {
+  voiceEnabled = !voiceEnabled;
+  if (!voiceEnabled && window.speechSynthesis) window.speechSynthesis.cancel();
+  document.getElementById('voiceToggle').innerHTML = voiceEnabled ? '🔊 AI Voiceover: <b>ON</b>' : '🔇 AI Voiceover: <b>OFF</b>';
+  document.getElementById('voiceStatus').innerText = voiceEnabled ? 'Natural Narration Active' : 'Muted';
+});
+
+function animate(timestamp) {
+  if (!startTime) startTime = timestamp;
+  const elapsed = (timestamp - startTime) / 1000.0;
+
+  if (elapsed <= DURATION && isPlaying) {
+    renderScene(elapsed);
+
+    // Synchronized Voiceover Triggers
+    if (elapsed >= 0.2 && !spokenScenes[1]) {
+      spokenScenes[1] = true;
+      speak(narrationScript.scene1);
+    } else if (elapsed >= 6.2 && !spokenScenes[2]) {
+      spokenScenes[2] = true;
+      speak(narrationScript.scene2);
+      playChime(640, 'triangle', 0.2);
+    } else if (elapsed >= 12.2 && !spokenScenes[3]) {
+      spokenScenes[3] = true;
+      speak(narrationScript.scene3);
+      playChime(580, 'sine', 0.25);
+    } else if (elapsed >= 20.2 && !spokenScenes[4]) {
+      spokenScenes[4] = true;
+      speak(narrationScript.scene4);
+      playChime(720, 'sine', 0.2);
+    } else if (elapsed >= 26.2 && !spokenScenes[5]) {
+      spokenScenes[5] = true;
+      speak(narrationScript.scene5);
+      playChime(880, 'triangle', 0.3);
+    }
+
+    document.getElementById('progressBar').style.width = (elapsed / DURATION * 100) + '%';
+    document.getElementById('timerText').innerText = elapsed.toFixed(1) + 's / ' + DURATION + 's';
+    requestAnimationFrame(animate);
+  } else if (elapsed > DURATION) {
+    isPlaying = false;
+    document.getElementById('playBtn').innerText = '▶ Replay with Voiceover';
+    if (isRecording) {
+      mediaRecorder.stop();
+      isRecording = false;
+      document.getElementById('recordBtn').innerText = '⏺ Record & Save Video';
+    }
+  }
+}
+
+// Initial draw
+logoImg.onload = () => renderScene(0);
+
+document.getElementById('playBtn').addEventListener('click', () => {
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+  startTime = 0;
+  isPlaying = true;
+  confetti.length = 0;
+  spokenScenes = {};
+  document.getElementById('playBtn').innerText = '⏸ Playing...';
+  requestAnimationFrame(animate);
+});
+
+let mediaRecorder;
+let recordedChunks = [];
+
+document.getElementById('recordBtn').addEventListener('click', () => {
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+  const stream = canvas.captureStream(60); // 60 FPS HD Video
+  recordedChunks = [];
+  
+  try {
+    mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' });
+  } catch (e) {
+    mediaRecorder = new MediaRecorder(stream);
+  }
+
+  mediaRecorder.ondataavailable = (e) => {
+    if (e.data.size > 0) recordedChunks.push(e.data);
+  };
+
+  mediaRecorder.onstop = () => {
+    const blob = new Blob(recordedChunks, { type: 'video/webm' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'NearFix_Ultra_Promo_30s.webm';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    }, 100);
+    alert('🎉 Ultra-stylish 60 FPS promo video with audio narration recorded and downloaded!');
+  };
+
+  mediaRecorder.start();
+  isRecording = true;
+  isPlaying = true;
+  confetti.length = 0;
+  spokenScenes = {};
+  startTime = 0;
+  document.getElementById('recordBtn').innerText = 'Recording Video... 🔴';
+  requestAnimationFrame(animate);
+});
+</script>
+</body>
+</html>

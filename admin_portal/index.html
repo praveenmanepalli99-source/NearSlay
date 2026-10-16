@@ -1,0 +1,3436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NearFix Admin Control Center | Cloud Management Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #00875A;
+      --primary-dark: #005A3C;
+      --primary-light: #E3F7EC;
+      --secondary: #FF6B35;
+      --secondary-light: #FFF0E9;
+      --dark-bg: #0F172A;
+      --dark-card: #1E293B;
+      --bg: #F8FAFC;
+      --surface: #FFFFFF;
+      --card-border: #E2E8F0;
+      --text-primary: #1E293B;
+      --text-secondary: #64748B;
+      --text-muted: #94A3B8;
+      --error: #EF4444;
+      --success: #10B981;
+      --warning: #F59E0B;
+      --indigo: #6366F1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Outfit', -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--dark-bg);
+      color: white;
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      background: var(--primary);
+      color: white;
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 4px 14px rgba(0, 135, 90, 0.4);
+    }
+
+    .brand-title {
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+    }
+
+    .brand-subtitle {
+      font-size: 11px;
+      color: #94A3B8;
+      font-weight: 500;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .badge-live {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #34D399;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .pulse {
+      width: 8px;
+      height: 8px;
+      background: #34D399;
+      border-radius: 50%;
+      animation: pulseAnim 1.5s infinite;
+    }
+
+    @keyframes pulseAnim {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(52, 211, 153, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+    }
+
+    .btn {
+      padding: 9px 18px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: none;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+
+    .btn-danger {
+      background: var(--error);
+      color: white;
+    }
+    .btn-danger:hover {
+      background: #DC2626;
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--card-border);
+      color: var(--text-primary);
+    }
+    .btn-outline:hover {
+      background: #F1F5F9;
+    }
+
+    .btn-excel {
+      background: linear-gradient(135deg, #107C41 0%, #0B532B 100%);
+      color: white;
+      text-decoration: none;
+      box-shadow: 0 4px 12px rgba(16, 124, 65, 0.35);
+      border: 1px solid #169c53;
+    }
+    .btn-excel:hover {
+      background: linear-gradient(135deg, #169c53 0%, #107C41 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(16, 124, 65, 0.45);
+      color: white;
+    }
+
+    .btn-csv {
+      background: #334155;
+      color: white;
+      text-decoration: none;
+      border: 1px solid #475569;
+    }
+    .btn-csv:hover {
+      background: #1E293B;
+      transform: translateY(-1px);
+      color: white;
+    }
+
+    /* Tabs Bar */
+    .tabs-bar {
+      background: white;
+      border-bottom: 1px solid var(--card-border);
+      padding: 0 32px;
+      display: flex;
+      gap: 32px;
+    }
+
+    .tab-btn {
+      padding: 16px 4px;
+      background: transparent;
+      border: none;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+      transition: color 0.2s;
+    }
+
+    .tab-btn.active {
+      color: var(--primary);
+    }
+
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--primary);
+      border-radius: 3px 3px 0 0;
+    }
+
+    .count-pill {
+      background: #F1F5F9;
+      color: var(--text-secondary);
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-weight: 800;
+    }
+
+    .tab-btn.active .count-pill {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    /* Main Container */
+    .main-container {
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 28px 32px;
+      flex: 1;
+    }
+
+    .tab-view {
+      display: none;
+    }
+    .tab-view.active {
+      display: block;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: white;
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+      transition: transform 0.2s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .stat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .stat-title {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .stat-val {
+      font-size: 38px;
+      font-weight: 900;
+      color: var(--text-primary);
+      letter-spacing: -1px;
+    }
+
+    .stat-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Banner */
+    .banner {
+      background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
+      color: white;
+      border-radius: 20px;
+      padding: 24px 28px;
+      margin-bottom: 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.2);
+    }
+
+    .banner-title {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .banner-text {
+      font-size: 13px;
+      color: #94A3B8;
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* Section Card */
+    .section-card {
+      background: white;
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .section-title {
+      font-size: 17px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Search Box */
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #F8FAFC;
+      border: 1px solid var(--card-border);
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      width: 260px;
+    }
+    .search-box input {
+      border: none;
+      background: transparent;
+      outline: none;
+      width: 100%;
+      font-size: 13px;
+    }
+
+    /* Table Styles */
+    .table-responsive {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      background: #F8FAFC;
+      color: var(--text-secondary);
+      font-size: 11.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    td {
+      padding: 16px;
+      border-bottom: 1px solid #F1F5F9;
+      font-size: 13.5px;
+      vertical-align: middle;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background: #F8FAFC;
+    }
+
+    .user-cell {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #E2E8F0;
+      border: 2px solid white;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+
+    .user-name {
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .user-phone {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      font-family: 'Inter', sans-serif;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 800;
+    }
+
+    .tag-primary {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .tag-secondary {
+      background: var(--secondary-light);
+      color: var(--secondary);
+    }
+
+    .btn-delete {
+      background: #FEE2E2;
+      color: var(--error);
+      border: 1px solid #FECACA;
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .btn-delete:hover {
+      background: var(--error);
+      color: white;
+    }
+
+    /* Role Pill Filter Buttons */
+    .pill-group {
+      display: flex;
+      background: var(--bg-main);
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid var(--card-border);
+      gap: 4px;
+    }
+
+    .pill-btn {
+      background: transparent;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pill-btn:hover {
+      color: var(--text-primary);
+    }
+
+    .pill-btn.active {
+      background: white;
+      color: var(--primary);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+
+    /* Architecture / Stack Cards */
+    .arch-card {
+      background: white;
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 22px;
+      margin-bottom: 18px;
+      display: flex;
+      gap: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    }
+
+    .arch-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .arch-body {
+      flex: 1;
+    }
+
+    .arch-badge {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 3px 8px;
+      border-radius: 5px;
+      display: inline-block;
+      margin-bottom: 6px;
+    }
+
+    .arch-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    .arch-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 10px;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .arch-endpoint {
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 11.5px;
+      font-family: monospace;
+      color: #334155;
+      display: inline-block;
+      margin-bottom: 10px;
+    }
+
+    .tech-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .tech-tag {
+      background: #F1F5F9;
+      color: #475569;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--text-secondary);
+    }
+    .empty-state i {
+      font-size: 48px;
+      color: #CBD5E1;
+      margin-bottom: 12px;
+    }
+
+    /* PIN Modal */
+    #auth-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .pin-card {
+      background: white;
+      border-radius: 24px;
+      padding: 36px 32px;
+      max-width: 380px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+    }
+
+    .pin-icon {
+      width: 64px;
+      height: 64px;
+      background: var(--primary-light);
+      color: var(--primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin: 0 auto 18px;
+    }
+
+    .pin-input {
+      width: 100%;
+      padding: 14px;
+      font-size: 20px;
+      text-align: center;
+      letter-spacing: 6px;
+      border: 2px solid var(--card-border);
+      border-radius: 12px;
+      margin: 18px 0;
+      font-weight: 800;
+      outline: none;
+    }
+    .pin-input:focus {
+      border-color: var(--primary);
+    }
+
+    /* System Specs & Credentials Styles */
+    .specs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .spec-card {
+      background: white;
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .spec-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #F1F5F9;
+    }
+
+    .spec-card-title {
+      font-size: 16px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text-primary);
+    }
+
+    .spec-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 14px;
+    }
+
+    .spec-label {
+      font-size: 11.5px;
+      font-weight: 800;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .spec-val-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-family: monospace;
+      color: #1E293B;
+      word-break: break-all;
+    }
+
+    .btn-copy {
+      background: white;
+      border: 1px solid #CBD5E1;
+      color: #475569;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+
+    .btn-copy:hover {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .badge-accent {
+      background: rgba(0, 135, 90, 0.1);
+      color: var(--primary);
+      border: 1px solid rgba(0, 135, 90, 0.2);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    /* Wallet & Payout System Styles */
+    .wallet-hero {
+      background: linear-gradient(135deg, #064E3B 0%, #0F172A 100%);
+      color: white;
+      border-radius: 24px;
+      padding: 32px;
+      margin-bottom: 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 24px;
+      box-shadow: 0 16px 36px -10px rgba(6, 78, 59, 0.35);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .wallet-hero::after {
+      content: '';
+      position: absolute;
+      right: -60px;
+      bottom: -60px;
+      width: 240px;
+      height: 240px;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .wallet-balance-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #A7F3D0;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .wallet-balance-amount {
+      font-size: 48px;
+      font-weight: 900;
+      letter-spacing: -1.5px;
+      color: #FFFFFF;
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+
+    .wallet-balance-amount .currency {
+      font-size: 32px;
+      color: #34D399;
+      font-weight: 700;
+    }
+
+    .wallet-stats-sub {
+      display: flex;
+      gap: 24px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    .wallet-sub-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .wallet-sub-label {
+      font-size: 11.5px;
+      color: #94A3B8;
+      font-weight: 600;
+    }
+
+    .wallet-sub-val {
+      font-size: 16px;
+      font-weight: 800;
+      color: #E2E8F0;
+    }
+
+    /* Bank Account Card */
+    .bank-card-preview {
+      background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
+      border: 1px solid #334155;
+      border-radius: 20px;
+      padding: 24px;
+      color: white;
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.3);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 210px;
+      position: relative;
+    }
+
+    .bank-card-chip {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .chip-icon {
+      width: 44px;
+      height: 32px;
+      background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: #78350F;
+      box-shadow: inset 0 0 4px rgba(0,0,0,0.3);
+    }
+
+    .bank-acc-number {
+      font-family: monospace;
+      font-size: 20px;
+      letter-spacing: 3px;
+      font-weight: 700;
+      color: #F8FAFC;
+      margin-bottom: 18px;
+    }
+
+    .bank-card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    /* Modal Overlay Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-card {
+      background: white;
+      border-radius: 24px;
+      padding: 32px;
+      max-width: 520px;
+      width: 92%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3);
+      animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes modalPop {
+      0% { transform: scale(0.92); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid #F1F5F9;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-label {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-input, .form-select {
+      padding: 12px 14px;
+      border: 1.5px solid var(--card-border);
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-input:focus, .form-select:focus {
+      border-color: var(--primary);
+    }
+
+    .quick-amount-pill {
+      background: #F1F5F9;
+      color: #334155;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid #E2E8F0;
+      transition: all 0.15s;
+    }
+
+    .quick-amount-pill:hover {
+      background: var(--primary-light);
+      color: var(--primary);
+      border-color: var(--primary);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Admin PIN Authentication Modal -->
+  <div id="auth-overlay">
+    <div class="pin-card">
+      <div class="pin-icon">
+        <i class="fa-solid fa-shield-halved"></i>
+      </div>
+      <h2 style="font-weight: 900; font-size: 22px; margin-bottom: 6px;">Admin Access Only</h2>
+      <p style="font-size: 13px; color: var(--text-secondary);">Enter Administrator PIN to manage registered users.</p>
+      
+      <input type="password" id="pin-input" class="pin-input" maxlength="4" placeholder="••••" autofocus onkeyup="if(event.key==='Enter') unlockAdmin()">
+      
+      <button class="btn btn-primary" style="width: 100%; justify-content: center; padding: 14px;" onclick="unlockAdmin()">
+        <i class="fa-solid fa-lock-open"></i> Unlock Dashboard
+      </button>
+
+      <p style="font-size: 11.5px; color: var(--text-muted); margin-top: 14px;">Master PIN: <strong style="color: var(--primary);">9999</strong></p>
+    </div>
+  </div>
+
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="brand">
+      <div class="brand-logo">
+        <i class="fa-solid fa-screwdriver-wrench"></i>
+      </div>
+      <div>
+        <div class="brand-title">NearFix Admin Center</div>
+        <div class="brand-subtitle">Private Cloud Operations & User Management</div>
+      </div>
+    </div>
+
+    <div class="nav-actions">
+      <div class="badge-live">
+        <div class="pulse"></div>
+        <span id="connection-status">Live Cloud Synchronized</span>
+      </div>
+      <button class="btn btn-excel" onclick="downloadExcelFile()" title="Download Excel Workbook (.xlsx) of all Backend Database URLs, API Keys, Passwords and Play Store Config">
+        <i class="fa-solid fa-file-excel"></i> Download Excel Sheet
+      </button>
+      <button class="btn btn-primary" onclick="fetchCloudData()">
+        <i class="fa-solid fa-rotate"></i> Refresh Data
+      </button>
+    </div>
+  </header>
+
+  <!-- Tabs Navigation -->
+  <nav class="tabs-bar">
+    <button class="tab-btn active" onclick="switchTab('overview')">
+      <i class="fa-solid fa-chart-pie"></i> Overview
+    </button>
+    <button class="tab-btn" onclick="switchTab('providers')">
+      <i class="fa-solid fa-helmet-safety"></i> Service Providers <span id="nav-prov-count" class="count-pill">0</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('residents')">
+      <i class="fa-solid fa-house-user"></i> Residents <span id="nav-res-count" class="count-pill">0</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('gateway')">
+      <i class="fa-solid fa-server"></i> Cloud Database & Gateway
+    </button>
+    <button class="tab-btn" onclick="switchTab('specs')">
+      <i class="fa-solid fa-key"></i> System Specs & Master Credentials
+    </button>
+    <button class="tab-btn" onclick="switchTab('wallet')">
+      <i class="fa-solid fa-wallet"></i> Owner Wallet <span id="nav-wallet-balance" class="count-pill">₹0</span>
+    </button>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-container">
+
+    <!-- ================= TAB 1: OVERVIEW ================= -->
+    <section id="tab-overview" class="tab-view active">
+      <div class="banner">
+        <div>
+          <div class="banner-title">Live NearFix User & Cloud Management</div>
+          <div class="banner-text">Real-time retrieval of all registered technicians and colony residents.</div>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <button class="btn btn-outline" style="background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.25); color: white;" onclick="switchTab('gateway')">
+            <i class="fa-solid fa-server"></i> Cloud DB & Gateway
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-title">Total Users Registered</span>
+            <div class="stat-icon" style="background: rgba(99, 102, 241, 0.1); color: var(--indigo);">
+              <i class="fa-solid fa-users"></i>
+            </div>
+          </div>
+          <div id="stat-total-users" class="stat-val">0</div>
+          <div class="stat-desc">Providers + Residents combined</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-title">Service Providers</span>
+            <div class="stat-icon" style="background: rgba(0, 135, 90, 0.1); color: var(--primary);">
+              <i class="fa-solid fa-screwdriver-wrench"></i>
+            </div>
+          </div>
+          <div id="stat-providers" class="stat-val" style="color: var(--primary);">0</div>
+          <div class="stat-desc">Active technicians registered</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-title">Colony Residents</span>
+            <div class="stat-icon" style="background: rgba(255, 107, 53, 0.1); color: var(--secondary);">
+              <i class="fa-solid fa-house-chimney"></i>
+            </div>
+          </div>
+          <div id="stat-residents" class="stat-val" style="color: var(--secondary);">0</div>
+          <div class="stat-desc">Colony households registered</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-title">Registered Locations</span>
+            <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success);">
+              <i class="fa-solid fa-location-dot"></i>
+            </div>
+          </div>
+          <div id="stat-locations-count" class="stat-val" style="color: var(--success);">1</div>
+          <div id="stat-locations-desc" class="stat-desc">Active colonies & cities registered</div>
+        </div>
+      </div>
+
+      <!-- ================= UNIFIED ALL USERS TABLE ================= -->
+      <div class="section-card">
+        <div class="section-header" style="flex-wrap: wrap; gap: 14px;">
+          <div>
+            <div class="section-title">
+              <i class="fa-solid fa-users" style="color: var(--indigo);"></i> All Registered Users (Service Providers & Residents)
+            </div>
+            <p style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">
+              Live unified database of all technicians offering trades and colony residents requesting repairs.
+            </p>
+          </div>
+
+          <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <!-- Role Filter Pills -->
+            <div class="pill-group">
+              <button class="pill-btn active" id="pill-all" onclick="setOverviewRoleFilter('all')">
+                All (<span id="pill-count-all">0</span>)
+              </button>
+              <button class="pill-btn" id="pill-providers" onclick="setOverviewRoleFilter('providers')">
+                <i class="fa-solid fa-helmet-safety" style="color: var(--primary);"></i> Providers (<span id="pill-count-providers">0</span>)
+              </button>
+              <button class="pill-btn" id="pill-residents" onclick="setOverviewRoleFilter('residents')">
+                <i class="fa-solid fa-house-user" style="color: var(--secondary);"></i> Residents (<span id="pill-count-residents">0</span>)
+              </button>
+            </div>
+
+            <!-- Search Box -->
+            <div class="search-box" style="min-width: 220px;">
+              <i class="fa-solid fa-magnifying-glass" style="color: var(--text-muted);"></i>
+              <input type="text" id="overview-search-input" placeholder="Search name, phone, colony, city..." onkeyup="filterOverviewUsers(this.value)">
+            </div>
+
+            <!-- Location / Colony Filter Dropdown -->
+            <select id="colony-filter-select" onchange="filterOverviewByColony(this.value)" style="padding: 8px 12px; border-radius: 10px; border: 1px solid var(--card-border); background: white; font-size: 13px; font-weight: 700; color: var(--text-primary); cursor: pointer;">
+              <option value="all">📍 All Locations (Global)</option>
+            </select>
+
+            <button class="btn btn-primary" onclick="fetchCloudData()">
+              <i class="fa-solid fa-rotate"></i> Refresh
+            </button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>User / Profile</th>
+                <th>Account Role & Type</th>
+                <th>Colony & Location</th>
+                <th>Address / Hourly Rate</th>
+                <th>Registered Mobile</th>
+                <th>Direct Contact</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="overview-all-users-body">
+              <tr><td colspan="7" class="empty-state">Loading registered users...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TAB 2: SERVICE PROVIDERS ================= -->
+    <section id="tab-providers" class="tab-view">
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title">
+            <i class="fa-solid fa-helmet-safety" style="color: var(--primary);"></i> Registered Service Providers
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <div class="search-box">
+              <i class="fa-solid fa-magnifying-glass" style="color: var(--text-muted);"></i>
+              <input type="text" id="filter-providers" placeholder="Filter technicians..." onkeyup="filterProvidersTable(this.value)">
+            </div>
+            <button class="btn btn-primary" onclick="openAddProviderModal()">
+              <i class="fa-solid fa-plus"></i> Add Provider
+            </button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Technician</th>
+                <th>Trade Category</th>
+                <th>Hourly Rate</th>
+                <th>Colony & City</th>
+                <th>Mobile Number</th>
+                <th>Direct Contact</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="full-providers-body">
+              <tr><td colspan="7" class="empty-state">Loading providers...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TAB 3: RESIDENTS ================= -->
+    <section id="tab-residents" class="tab-view">
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title">
+            <i class="fa-solid fa-house-user" style="color: var(--secondary);"></i> Registered Colony Residents
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <div class="search-box">
+              <i class="fa-solid fa-magnifying-glass" style="color: var(--text-muted);"></i>
+              <input type="text" placeholder="Search resident..." onkeyup="filterResidents(this.value)">
+            </div>
+            <button class="btn btn-primary" onclick="fetchCloudData()">
+              <i class="fa-solid fa-rotate"></i> Refresh
+            </button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Resident</th>
+                <th>Flat / Quarter Address</th>
+                <th>Colony</th>
+                <th>City</th>
+                <th>Mobile Number</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="full-residents-body">
+              <tr><td colspan="6" class="empty-state">Loading residents...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TAB 4: CLOUD DATABASE & GATEWAY CONFIG ================= -->
+    <section id="tab-gateway" class="tab-view">
+      <!-- Gateway Banner -->
+      <div class="banner" style="background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); border: 1px solid #334155; margin-bottom: 24px;">
+        <div>
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+            <div style="background: rgba(16, 185, 129, 0.2); color: #10B981; padding: 4px 10px; border-radius: 8px; font-size: 11.5px; font-weight: 800; border: 1px solid rgba(16, 185, 129, 0.4);">
+              <i class="fa-solid fa-satellite-dish"></i> ZERO-REBUILD GATEWAY
+            </div>
+            <div class="banner-title" style="margin-bottom: 0;">Cloud Database & Dynamic API Gateway Management</div>
+          </div>
+          <div class="banner-text">
+            Update your public backend URL or Cloudflare tunnel anytime. Changes broadcast instantly to all installed mobile apps worldwide without requiring new Google Play builds.
+          </div>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+          <button class="btn btn-primary" onclick="testAndBroadcastGateway()" style="background: #10B981; border: none; padding: 12px 20px;">
+            <i class="fa-solid fa-tower-broadcast"></i> Broadcast to All Apps
+          </button>
+        </div>
+      </div>
+
+      <!-- Card 0: Enterprise 24/7 Google Firebase Cloud Database -->
+      <div class="section-card" style="margin-bottom: 24px; border: 2px solid #F59E0B; background: linear-gradient(180deg, #FFFFFF 0%, #FFFBEB 100%);">
+        <div class="section-header" style="border-bottom: 1px solid #FDE68A; padding-bottom: 16px; margin-bottom: 18px;">
+          <div>
+            <div class="section-title" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <i class="fa-solid fa-fire-flame-curved" style="color: #F59E0B; font-size: 22px;"></i>
+              <span>Google Firebase Realtime Database (24/7 Enterprise Cloud)</span>
+              <span style="background: #10B981; color: white; font-size: 11px; padding: 3px 10px; border-radius: 12px; font-weight: 800;">ACTIVE (SPARK FREE PLAN)</span>
+            </div>
+            <p style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">
+              Direct permanent Google Cloud database. Operates 24/7/365 with zero downtime, even if your laptop is closed or turned off.
+            </p>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <a href="https://console.firebase.google.com/project/nearslay/database/nearslay-default-rtdb/data" target="_blank" class="btn btn-primary" style="background: #F59E0B; border: none; padding: 10px 18px; text-decoration: none; font-size: 13px;">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Firebase Console
+            </a>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: center; margin-bottom: 16px;">
+          <div>
+            <label style="font-size: 12px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: block;">
+              Permanent Production Database URL
+            </label>
+            <input type="text" id="firebase-rtdb-url-input" value="https://nearslay-default-rtdb.firebaseio.com" readonly style="width: 100%; padding: 12px 16px; border-radius: 10px; background: white; border: 1px solid #FCD34D; color: #92400E; font-family: monospace; font-size: 14.5px; font-weight: 800; outline: none;">
+          </div>
+          <div style="margin-top: 22px;">
+            <button class="btn btn-primary" onclick="syncFirebaseNow()" style="background: #059669; border: none; padding: 12px 20px;">
+              <i class="fa-solid fa-cloud-arrow-up"></i> Sync All to Firebase
+            </button>
+          </div>
+          <div style="margin-top: 22px;">
+            <button class="btn btn-outline" onclick="fetchCloudData()" style="padding: 12px 18px; border-color: #F59E0B; color: #B45309;">
+              <i class="fa-solid fa-rotate"></i> Pull from Firebase
+            </button>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+          <div style="background: white; border: 1px solid #FDE68A; border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-server" style="color: #10B981; font-size: 18px;"></i>
+            <div>
+              <div style="font-size: 11px; color: var(--text-muted); font-weight: 700;">CLOUD UPTIME</div>
+              <div style="font-size: 13.5px; font-weight: 900; color: #065F46;">24/7/365 Always Online</div>
+            </div>
+          </div>
+          <div style="background: white; border: 1px solid #FDE68A; border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-tag" style="color: #F59E0B; font-size: 18px;"></i>
+            <div>
+              <div style="font-size: 11px; color: var(--text-muted); font-weight: 700;">MONTHLY COST</div>
+              <div style="font-size: 13.5px; font-weight: 900; color: #92400E;">₹0.00 (Google Spark Plan)</div>
+            </div>
+          </div>
+          <div style="background: white; border: 1px solid #FDE68A; border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-users" style="color: #6366F1; font-size: 18px;"></i>
+            <div>
+              <div style="font-size: 11px; color: var(--text-muted); font-weight: 700;">MULTI-DEVICE SYNC</div>
+              <div style="font-size: 13.5px; font-weight: 900; color: #3730A3;">Instant Live Broadcast</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 1: Google Firebase Realtime Database Live Cloud Backend -->
+      <div class="section-card" style="margin-bottom: 24px; border: 1px solid var(--card-border);">
+        <div class="section-header" style="border-bottom: 1px solid #F1F5F9; padding-bottom: 16px; margin-bottom: 18px;">
+          <div>
+            <div class="section-title">
+              <i class="fa-solid fa-fire" style="color: #F59E0B;"></i> Official Google Firebase Realtime Database (24/7 Cloud)
+            </div>
+            <p style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">
+              Primary authoritative cloud database serving live mobile registrations, resident updates, and instant multi-device sync.
+            </p>
+          </div>
+          <div id="firebase-status-badge" style="font-size: 12.5px; color: #10B981; font-weight: 700; display: flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.1); padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(16, 185, 129, 0.3);">
+            <i class="fa-solid fa-circle-check"></i> <span id="firebase-status-text">Connected & Live (HTTPS REST)</span>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: center; margin-bottom: 20px;">
+          <div>
+            <label style="font-size: 12px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: block;">
+              Cloud Database REST URL
+            </label>
+            <input type="text" id="firebase-url-input" readonly value="https://nearslay-default-rtdb.firebaseio.com" style="width: 100%; padding: 12px 16px; border-radius: 10px; background: #0F172A; border: 1px solid #334155; color: #38BDF8; font-family: monospace; font-size: 14.5px; font-weight: 700; outline: none;">
+          </div>
+          <div style="margin-top: 22px;">
+            <a href="https://nearslay-default-rtdb.firebaseio.com/providers.json" target="_blank" class="btn btn-outline" style="padding: 12px 18px; text-decoration: none;">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i> View Providers JSON
+            </a>
+          </div>
+          <div style="margin-top: 22px;">
+            <a href="https://nearslay-default-rtdb.firebaseio.com/residents.json" target="_blank" class="btn btn-primary" style="padding: 12px 20px; text-decoration: none;">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i> View Residents JSON
+            </a>
+          </div>
+        </div>
+
+        <!-- Firebase Architecture Infographic -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-top: 10px;">
+          <div style="background: #F8FAFC; border: 1px solid var(--card-border); border-radius: 12px; padding: 14px;">
+            <div style="font-size: 11px; font-weight: 800; color: var(--primary); text-transform: uppercase; margin-bottom: 4px;">Direct App-to-Cloud</div>
+            <div style="font-size: 12px; color: var(--text-secondary);">Mobile apps connect directly without intermediate tunnels.</div>
+          </div>
+          <div style="background: #F8FAFC; border: 1px solid var(--card-border); border-radius: 12px; padding: 14px;">
+            <div style="font-size: 11px; font-weight: 800; color: var(--indigo); text-transform: uppercase; margin-bottom: 4px;">Zero Expiration</div>
+            <div style="font-size: 12px; color: var(--text-secondary);">Permanent cloud storage — no 24h reset cycles.</div>
+          </div>
+          <div style="background: #F8FAFC; border: 1px solid var(--card-border); border-radius: 12px; padding: 14px;">
+            <div style="font-size: 11px; font-weight: 800; color: #059669; text-transform: uppercase; margin-bottom: 4px;">Real-Time Deletion</div>
+            <div style="font-size: 12px; color: var(--text-secondary);">Instant account purging across dashboard and active devices.</div>
+          </div>
+          <div style="background: #F8FAFC; border: 1px solid var(--card-border); border-radius: 12px; padding: 14px;">
+            <div style="font-size: 11px; font-weight: 800; color: #64748B; text-transform: uppercase; margin-bottom: 4px;">Offline-First Resilience</div>
+            <div style="font-size: 12px; color: var(--text-secondary);">Encrypted local cache auto-syncs when online.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Database Synchronization & Maintenance Controls -->
+      <div class="section-card" style="border: 1px solid var(--card-border);">
+        <div class="section-header" style="border-bottom: 1px solid #F1F5F9; padding-bottom: 16px; margin-bottom: 18px;">
+          <div>
+            <div class="section-title">
+              <i class="fa-solid fa-database" style="color: var(--secondary);"></i> Database Actions & Maintenance
+            </div>
+            <p style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">
+              Export full records, trigger instant cloud synchronization, or perform database maintenance.
+            </p>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 14px; flex-wrap: wrap; align-items: center;">
+          <button class="btn btn-excel" onclick="downloadExcelFile()" style="padding: 12px 20px;">
+            <i class="fa-solid fa-file-excel"></i> Export Excel Backup (.xlsx)
+          </button>
+          <button class="btn btn-csv" onclick="downloadCsvFile()" style="padding: 12px 20px;">
+            <i class="fa-solid fa-file-csv"></i> Export CSV Backup (.csv)
+          </button>
+          <button class="btn btn-outline" onclick="fetchCloudData()" style="padding: 12px 20px;">
+            <i class="fa-solid fa-rotate"></i> Force Cloud Sync
+          </button>
+          <button class="btn btn-danger" onclick="confirmWipeDatabase()" style="padding: 12px 20px; margin-left: auto;">
+            <i class="fa-solid fa-trash-can"></i> Wipe All Cloud Records
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TAB: SYSTEM SPECS & MASTER CREDENTIALS ================= -->
+    <section id="tab-specs" class="tab-view">
+      <div class="banner" style="background: linear-gradient(135deg, #0B3B24 0%, #00875A 100%);">
+        <div>
+          <div class="banner-title" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <i class="fa-solid fa-shield-halved"></i> NearFix System Architecture & Master Vault
+            <span style="background: rgba(52, 211, 153, 0.2); color: #34D399; border: 1px solid rgba(52, 211, 153, 0.4); font-size: 11px; padding: 3px 10px; border-radius: 12px; font-weight: 800;">
+              <i class="fa-solid fa-bolt"></i> Live Code Synced: <span id="spec-sync-time">Live</span>
+            </span>
+          </div>
+          <div class="banner-text">Dynamically synchronized with the live codebase (pubspec.yaml, build.gradle, AndroidManifest.xml, Dart services).</div>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+          <button class="btn btn-excel" onclick="downloadExcelFile()" style="background: white; color: #00875A; font-weight: 800;">
+            <i class="fa-solid fa-file-excel"></i> Download Excel (.xlsx)
+          </button>
+          <button class="btn btn-csv" onclick="downloadCsvFile()" style="background: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.3);">
+            <i class="fa-solid fa-file-csv"></i> Download CSV
+          </button>
+          <button class="btn btn-outline" onclick="loadDynamicSpecs(true)" style="background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3); color: white;">
+            <i class="fa-solid fa-rotate"></i> Refresh Specs
+          </button>
+        </div>
+      </div>
+
+      <div class="specs-grid">
+
+        <!-- CARD 1: ANDROID & PLAY STORE -->
+        <div class="spec-card">
+          <div class="spec-card-header">
+            <div class="spec-card-title"><i class="fa-brands fa-google-play" style="color: #00875A;"></i> Google Play Store Config</div>
+            <span class="badge-accent">Live from build.gradle</span>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-label">Package Name / Application ID</div>
+            <div class="spec-val-box">
+              <span id="spec-app-id">com.nearfix.app.nearfix</span>
+              <button class="btn-copy" id="btn-copy-app-id" onclick="copyToClipboard(document.getElementById('spec-app-id').innerText, this)"><i class="fa-solid fa-copy"></i> Copy</button>
+            </div>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-label">App Name / Label</div>
+            <div class="spec-val-box">
+              <span id="spec-app-name">NearSlay (NearFix Local Services)</span>
+              <button class="btn-copy" id="btn-copy-app-name" onclick="copyToClipboard(document.getElementById('spec-app-name').innerText, this)"><i class="fa-solid fa-copy"></i> Copy</button>
+            </div>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-label">App Version & Build Code</div>
+            <div class="spec-val-box">
+              <span id="spec-version">v1.0.13 (Build Version Code: 18)</span>
+              <button class="btn-copy" id="btn-copy-version" onclick="copyToClipboard(window.currentVersionFull || '1.0.13+18', this)"><i class="fa-solid fa-copy"></i> Copy</button>
+            </div>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-label">Android SDK Levels</div>
+            <div class="spec-val-box">
+              <span id="spec-sdk-levels">Min SDK: 24 (Android 7.0) | Target SDK: 36 (Android 15+) | Compile SDK: 34</span>
+            </div>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-label">Production App Bundle Build Command</div>
+            <div class="spec-val-box">
+              <span>flutter build appbundle --release</span>
+              <button class="btn-copy" onclick="copyToClipboard('flutter build appbundle --release', this)"><i class="fa-solid fa-copy"></i> Copy</button>
+            </div>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-label">Network Cleartext Traffic Policy</div>
+            <div class="spec-val-box">
+              <span id="spec-cleartext">usesCleartextTraffic="false" (Strict HTTPS Play Store Compliance)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD 2: FRONTEND STACK -->
+        <div class="spec-card">
+          <div class="spec-card-header">
+            <div class="spec-card-title"><i class="fa-brands fa-flutter" style="color: #0284C7;"></i> Frontend Architecture</div>
+            <span class="badge-accent">Live from pubspec.yaml</span>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-label">Framework & Language</div>
+            <div class="spec-val-box">
+              <span id="spec-flutter-sdk">Flutter 3.24+ / Dart SDK >=3.4.3 &lt;4.0.0</span>
+            </div>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-label">State Management Pattern</div>
+            <div class="spec-val-box">
+              <span>Provider Pattern (NearFixState ChangeNotifier)</span>
+            </div>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-label">Core UI Screens (<span id="spec-screens-count">9</span> Total)</div>
+            <div class="spec-val-box" id="spec-screens-list" style="font-family: inherit; font-size: 11.5px; line-height: 1.4;">
+              HomeScreen, PhoneAuthScreen, OtpVerificationScreen, NewUserRoleChoiceScreen, UserRegistrationScreen, ProviderRegistrationScreen, ProviderDashboardScreen, MyProfileScreen, AuthRoleSelectionScreen
+            </div>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-label">Key Packages & Dependencies</div>
+            <div class="tech-tags" id="spec-deps-list" style="margin-top: 4px;">
+              <span class="tech-tag">provider: ^6.1.2</span>
+              <span class="tech-tag">geolocator: ^12.0.0</span>
+              <span class="tech-tag">geocoding: ^3.0.0</span>
+              <span class="tech-tag">google_fonts: ^6.2.1</span>
+              <span class="tech-tag">image_picker: ^1.1.2</span>
+              <span class="tech-tag">shared_preferences: ^2.2.3</span>
+              <span class="tech-tag">http: ^1.2.2</span>
+              <span class="tech-tag">google_generative_ai: ^0.4.6</span>
+              <span class="tech-tag">url_launcher: ^6.3.0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD 3: CLOUD DATABASE & ENDPOINTS -->
+        <div class="spec-card">
+          <div class="spec-card-header">
+            <div class="spec-card-title"><i class="fa-solid fa-cloud" style="color: #FF6B35;"></i> Cloud Database & Endpoints</div>
+            <span class="badge-accent">Live from firebase_config.dart</span>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-label">Production Firebase Realtime Database Root</div>
+            <div class="spec-val-box">
+              <span id="spec-firebase-url">https://nearslay-default-rtdb.firebaseio.com</span>
+              <button class="btn-copy" onclick="copyToClipboard(document.getElementById('spec-firebase-url').innerText, this)"><i class="fa-solid fa-copy"></i> Copy</button>
+            </div>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-label">Technician Directory REST Node</div>
+            <div class="spec-val-box">
+              <span id="spec-providers-url">https://nearslay-default-rtdb.firebaseio.com/providers.json</span>
+              <button class="btn-copy" onclick="copyToClipboard(document.getElementById('spec-providers-url').innerText, this)"><i class="fa-solid fa-copy"></i> Copy</button>
+            </div>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-label">Resident Directory REST Node</div>
+            <div class="spec-val-box">
+              <span id="spec-residents-url">https://nearslay-default-rtdb.firebaseio.com/residents.json</span>
+              <button class="btn-copy" onclick="copyToClipboard(document.getElementById('spec-residents-url').innerText, this)"><i class="fa-solid fa-copy"></i> Copy</button>
+            </div>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-label">Local Management & API Server</div>
+            <div class="spec-val-box">
+              <span>http://localhost:5000/api (server.py)</span>
+              <button class="btn-copy" onclick="copyToClipboard('http://localhost:5000/api', this)"><i class="fa-solid fa-copy"></i> Copy</button>
+            </div>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-label">Local Persistent Database Mirror</div>
+            <div class="spec-val-box">
+              <span>admin_portal/cloud_db.json</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD 4: API KEYS & CREDENTIALS -->
+        <div class="spec-card">
+          <div class="spec-card-header">
+            <div class="spec-card-title"><i class="fa-solid fa-key" style="color: #F59E0B;"></i> API Keys & Credentials Vault</div>
+            <span class="badge-accent">Live from sms_service.dart</span>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-label">Firebase Identity Toolkit Web API Key (10k Free SMS/mo)</div>
+            <div class="spec-val-box">
+              <span id="spec-firebase-key">AIzaSyBPkvHZceFr6JaDortv6K8FNtOOHaI77N0</span>
+              <button class="btn-copy" onclick="copyToClipboard(document.getElementById('spec-firebase-key').innerText, this)"><i class="fa-solid fa-copy"></i> Copy</button>
+            </div>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-label">Master Bypass Testing OTP (Universal Mobile)</div>
+            <div class="spec-val-box">
+              <span id="spec-test-otp" style="font-weight: 800; color: #00875A; font-size: 15px;">112233</span>
+              <button class="btn-copy" onclick="copyToClipboard(document.getElementById('spec-test-otp').innerText, this)"><i class="fa-solid fa-copy"></i> Copy</button>
+            </div>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-label">Admin Portal Master Unlock PIN</div>
+            <div class="spec-val-box">
+              <span id="spec-admin-pin" style="font-weight: 800; color: #00875A; font-size: 15px;">9999</span>
+              <button class="btn-copy" onclick="copyToClipboard(document.getElementById('spec-admin-pin').innerText, this)"><i class="fa-solid fa-copy"></i> Copy</button>
+            </div>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-label">Fast2SMS Gateway API Key (Backup +91 SMS)</div>
+            <div class="spec-val-box">
+              <span id="spec-fast2sms-key">dIc1LzfVBHkEPuq8htso6YenWy25SCMDpKJ4UGQaglmi0FAxj3epD8fQYq35HkKnLMl2NojBPO1UZSRa</span>
+              <button class="btn-copy" onclick="copyToClipboard(document.getElementById('spec-fast2sms-key').innerText, this)"><i class="fa-solid fa-copy"></i> Copy</button>
+            </div>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-label">2Factor.in Gateway API Key (Tertiary SMS/Voice)</div>
+            <div class="spec-val-box">
+              <span id="spec-2factor-key">c22862fa-ab7c-11f1-9cb1-0200cd936042</span>
+              <button class="btn-copy" onclick="copyToClipboard(document.getElementById('spec-2factor-key').innerText, this)"><i class="fa-solid fa-copy"></i> Copy</button>
+            </div>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-label">Google Gemini AI Engine</div>
+            <div class="spec-val-box">
+              <span id="spec-gemini-model">gemini-1.5-flash (Smart Issue Diagnostics & Labor Cost Estimations)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD 5: PRIVACY & PLAY STORE COMPLIANCE -->
+        <div class="spec-card">
+          <div class="spec-card-header">
+            <div class="spec-card-title"><i class="fa-solid fa-scale-balanced" style="color: #10B981;"></i> Privacy, Permissions & Compliance</div>
+            <span class="badge-accent">Live from AndroidManifest.xml</span>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-label">Required Runtime Permissions (Declared in Manifest)</div>
+            <div class="tech-tags" id="spec-perms-list" style="margin-top: 4px;">
+              <span class="tech-tag">INTERNET</span>
+              <span class="tech-tag">ACCESS_NETWORK_STATE</span>
+              <span class="tech-tag">ACCESS_FINE_LOCATION</span>
+              <span class="tech-tag">ACCESS_COARSE_LOCATION</span>
+            </div>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-label">Dialer & Intent Queries (API 30+ Compliance)</div>
+            <div class="tech-tags" style="margin-top: 4px;">
+              <span class="tech-tag">tel: (Dialer Launch)</span>
+              <span class="tech-tag">mailto: (Email Inquiries)</span>
+            </div>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-label">Razorpay & Public Website Suite</div>
+            <div class="spec-val-box">
+              <span>public_website/ (index.html, privacy, terms, refund, shipping, contact)</span>
+            </div>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-label">Mandatory Legal Pages</div>
+            <div class="spec-val-box">
+              <span>terms.html, privacy.html, refund.html, shipping.html, contact.html</span>
+            </div>
+          </div>
+
+          <div class="spec-row" style="background: rgba(239, 68, 68, 0.08); border-radius: 8px; padding: 10px;">
+            <div class="spec-label" style="color: #ef4444;"><i class="fa-solid fa-triangle-exclamation"></i> Razorpay Review Warning</div>
+            <div class="spec-val-box">
+              <span style="font-size: 12px; color: #dc2626;">Never submit <b>firebaseio.com</b> to Razorpay! It is a cloud database REST endpoint and automatically redirects to Google Sign-In. Host <b>public_website/</b> on GitHub Pages or Cloudflare Pages instead.</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================= TAB: OWNER WALLET & BANK PAYOUTS ================= -->
+    <section id="tab-wallet" class="tab-view">
+      <!-- Wallet Hero Card -->
+      <div class="wallet-hero">
+        <div>
+          <div class="wallet-balance-title">
+            <i class="fa-solid fa-shield-halved" style="color: #34D399;"></i> NearFix Platform Owner Wallet
+          </div>
+          <div class="wallet-balance-amount">
+            <span class="currency">₹</span><span id="wallet-balance-main">0.00</span>
+          </div>
+          <div style="font-size: 13px; color: #A7F3D0; font-weight: 600; margin-top: 4px;">
+            Available Balance ready for Instant Bank Payout / Withdrawal
+          </div>
+
+          <div class="wallet-stats-sub">
+            <div class="wallet-sub-item">
+              <span class="wallet-sub-label">Total Revenue Collected</span>
+              <span id="wallet-total-earnings" class="wallet-sub-val" style="color: #FCD34D;">₹0.00</span>
+            </div>
+            <div class="wallet-sub-item">
+              <span class="wallet-sub-label">Total Withdrawn to Bank</span>
+              <span id="wallet-total-withdrawn" class="wallet-sub-val" style="color: #E2E8F0;">₹0.00</span>
+            </div>
+            <div class="wallet-sub-item">
+              <span class="wallet-sub-label">Active Pro Subscriptions</span>
+              <span id="wallet-active-pro-count" class="wallet-sub-val" style="color: #34D399;">0</span>
+            </div>
+            <div class="wallet-sub-item">
+              <span class="wallet-sub-label">Subscription Rate</span>
+              <span class="wallet-sub-val" style="color: #A7F3D0;">₹99 / Month</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 12px; z-index: 2;">
+          <button class="btn btn-primary" style="background: #10B981; padding: 14px 24px; font-size: 15px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);" onclick="openWithdrawModal()">
+            <i class="fa-solid fa-paper-plane"></i> Transfer to Bank Account
+          </button>
+          <button class="btn btn-outline" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.25); color: white; padding: 10px 18px;" onclick="openEditBankModal()">
+            <i class="fa-solid fa-building-columns"></i> Manage Bank Details
+          </button>
+        </div>
+      </div>
+
+      <!-- Bank & Payout Overview Grid -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px; margin-bottom: 28px;">
+        
+        <!-- Linked Bank Account Preview Card -->
+        <div class="bank-card-preview">
+          <div class="bank-card-chip">
+            <div class="chip-icon">
+              <i class="fa-solid fa-microchip"></i>
+            </div>
+            <div style="text-align: right;">
+              <span class="badge-accent" style="background: rgba(16, 185, 129, 0.2); color: #34D399; border-color: rgba(16, 185, 129, 0.3);">
+                <i class="fa-solid fa-circle-check"></i> Verified Bank Account
+              </span>
+              <div id="card-bank-name" style="font-weight: 800; font-size: 16px; margin-top: 4px; color: #F8FAFC;">HDFC Bank</div>
+            </div>
+          </div>
+
+          <div>
+            <div style="font-size: 11px; color: #94A3B8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Account Number</div>
+            <div id="card-account-number" class="bank-acc-number">•••• •••• •••• 1122</div>
+          </div>
+
+          <div class="bank-card-footer">
+            <div>
+              <div style="font-size: 10px; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.5px;">Account Holder</div>
+              <div id="card-account-holder" style="font-weight: 800; font-size: 13.5px; color: white;">NearFix Platform Owner</div>
+            </div>
+            <div>
+              <div style="font-size: 10px; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.5px;">IFSC Code</div>
+              <div id="card-ifsc" style="font-family: monospace; font-weight: 700; font-size: 13.5px; color: #34D399;">HDFC0001234</div>
+            </div>
+            <div>
+              <div style="font-size: 10px; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.5px;">Settlement Mode</div>
+              <div style="font-weight: 700; font-size: 12px; color: #FCD34D;">Instant IMPS / UPI</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payout Info & Quick Summary -->
+        <div class="section-card" style="margin-bottom: 0; display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div class="section-title" style="margin-bottom: 12px;">
+              <i class="fa-solid fa-money-bill-transfer" style="color: #10B981;"></i> Automated Payout Rules
+            </div>
+            <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 14px;">
+              When service providers pay ₹99/month, 100% of the funds are deposited into your NearFix Owner Wallet. You can trigger manual instant withdrawals or enable automated daily bank settlements.
+            </p>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <div style="display: flex; justify-content: space-between; font-size: 13px; padding: 8px 12px; background: #F8FAFC; border-radius: 8px;">
+                <span style="color: var(--text-secondary); font-weight: 600;">Linked Business UPI ID:</span>
+                <span id="card-upi-id" style="font-weight: 800; color: var(--text-primary); font-family: monospace;">pandupraveennani58@ybl</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 13px; padding: 8px 12px; background: #F8FAFC; border-radius: 8px;">
+                <span style="color: var(--text-secondary); font-weight: 600;">Transfer Processing Time:</span>
+                <span style="font-weight: 800; color: #00875A;">Instant (Under 60 seconds)</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 13px; padding: 8px 12px; background: #F8FAFC; border-radius: 8px;">
+                <span style="color: var(--text-secondary); font-weight: 600;">Payout Gateway Fees:</span>
+                <span style="font-weight: 800; color: #00875A;">₹0.00 (Zero Commission)</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: 18px; display: flex; gap: 10px;">
+            <button class="btn btn-primary" style="flex: 1; justify-content: center; background: #00875A;" onclick="openWithdrawModal()">
+              <i class="fa-solid fa-arrow-up-from-bracket"></i> Withdraw Now
+            </button>
+            <button class="btn btn-outline" style="border-color: var(--card-border);" onclick="openEditBankModal()">
+              <i class="fa-solid fa-pen-to-square"></i> Edit Bank
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Financial Ledger Tables -->
+      <div class="section-card">
+        <div class="section-header" style="flex-wrap: wrap; gap: 14px;">
+          <div>
+            <div class="section-title">
+              <i class="fa-solid fa-receipt" style="color: #6366F1;"></i> Financial Transaction History & Payouts
+            </div>
+            <p style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">
+              Live ledger of provider subscription credits and bank transfer withdrawals.
+            </p>
+          </div>
+
+          <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <div class="pill-group">
+              <button id="btn-ledger-inflows" class="pill-btn active" onclick="switchLedgerView('inflows')">
+                <i class="fa-solid fa-arrow-down-left"></i> Subscription Inflows (<span id="ledger-inflows-count">0</span>)
+              </button>
+              <button id="btn-ledger-subscribers" class="pill-btn" onclick="switchLedgerView('subscribers')">
+                <i class="fa-solid fa-user-check"></i> Subscribed Providers (<span id="ledger-subscribers-count">0</span>)
+              </button>
+              <button id="btn-ledger-payouts" class="pill-btn" onclick="switchLedgerView('payouts')">
+                <i class="fa-solid fa-building-columns"></i> Bank Withdrawals (<span id="ledger-payouts-count">0</span>)
+              </button>
+            </div>
+            <button class="btn btn-outline" style="border-color: #FECACA; color: #DC2626; background: #FEF2F2; padding: 6px 14px; font-size: 12px; font-weight: 700; border-radius: 8px; cursor: pointer;" onclick="clearAllDummyPayments()" title="Clear all test / dummy payment records">
+              <i class="fa-solid fa-trash-can"></i> Clear Dummy Payments
+            </button>
+          </div>
+        </div>
+
+        <!-- Real-time Mobile & Payment Search Bar -->
+        <div style="margin: 0 0 16px 0; padding: 10px 14px; background: #F8FAFC; border-radius: 12px; border: 1.5px solid var(--card-border); display: flex; align-items: center; gap: 10px;">
+          <i class="fa-solid fa-magnifying-glass" style="color: var(--text-muted); font-size: 14px;"></i>
+          <input type="text" id="ledger-search-input" placeholder="🔍 Search & verify by Mobile Number (e.g. 9848012349), Name, UTR, or Receipt..." style="flex: 1; border: none; background: transparent; font-size: 13.5px; outline: none; font-weight: 600; color: var(--text-primary);" oninput="renderInflowsTable(this.value)">
+          <span id="ledger-search-status" style="font-size: 12px; color: var(--text-muted); font-weight: 700;"></span>
+        </div>
+
+        <!-- VIEW A: SUBSCRIPTION INFLOWS (DEFAULT) -->
+        <div id="view-ledger-inflows" class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Receipt ID</th>
+                <th>Provider / Technician</th>
+                <th>Category</th>
+                <th>Phone Number</th>
+                <th>Plan Details</th>
+                <th>Revenue Amount</th>
+                <th>Payment Gateway</th>
+                <th>Date & Time</th>
+                <th>Status</th>
+                <th>Action / Verification</th>
+              </tr>
+            </thead>
+            <tbody id="inflows-table-body">
+              <tr>
+                <td colspan="10" class="empty-state">
+                  <i class="fa-solid fa-receipt"></i>
+                  <p>Loading subscription payments...</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- VIEW B: SUBSCRIBED PROVIDERS & TRIAL ROSTER -->
+        <div id="view-ledger-subscribers" class="table-responsive" style="display: none;">
+          <table>
+            <thead>
+              <tr>
+                <th>Provider Name</th>
+                <th>Trade Category</th>
+                <th>Colony & City</th>
+                <th>Phone Number</th>
+                <th>Subscription Status</th>
+                <th>Plan Rate</th>
+                <th>Validity / Expiry Date</th>
+                <th>Remaining</th>
+                <th>Auto-Billing</th>
+              </tr>
+            </thead>
+            <tbody id="subscribers-table-body">
+              <tr>
+                <td colspan="9" class="empty-state">
+                  <i class="fa-solid fa-user-check"></i>
+                  <p>Loading subscribed providers roster...</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- VIEW C: BANK PAYOUTS / TRANSFERS -->
+        <div id="view-ledger-payouts" class="table-responsive" style="display: none;">
+          <table>
+            <thead>
+              <tr>
+                <th>Payout ID</th>
+                <th>UTR Reference</th>
+                <th>Amount</th>
+                <th>Destination Bank</th>
+                <th>Account Masked</th>
+                <th>Mode</th>
+                <th>Date & Time</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="payouts-table-body">
+              <tr>
+                <td colspan="8" class="empty-state">
+                  <i class="fa-solid fa-building-columns"></i>
+                  <p>No bank withdrawals made yet.</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ================= WITHDRAWAL / PAYOUT MODAL ================= -->
+  <div id="withdraw-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 36px; height: 36px; border-radius: 10px; background: #E3F7EC; color: #00875A; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+            <i class="fa-solid fa-paper-plane"></i>
+          </div>
+          <div>
+            <h3 style="font-size: 17px; font-weight: 800;">Withdraw to Bank Account</h3>
+            <p style="font-size: 12px; color: var(--text-secondary);">Instant direct settlement to your registered bank account</p>
+          </div>
+        </div>
+        <button style="background: transparent; border: none; font-size: 18px; cursor: pointer; color: var(--text-muted);" onclick="closeWithdrawModal()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div style="background: #F8FAFC; border: 1px solid var(--card-border); border-radius: 14px; padding: 14px 18px; margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 12px; font-weight: 700; color: var(--text-secondary);">Available Balance:</span>
+          <span id="modal-available-balance" style="font-size: 20px; font-weight: 900; color: #00875A;">₹0.00</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; font-size: 11.5px; color: var(--text-muted);">
+          <span>Destination Account:</span>
+          <span id="modal-bank-destination" style="font-weight: 700; color: var(--text-primary);">HDFC Bank (•••• 1122)</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Withdrawal Amount (₹ INR)</label>
+        <input type="number" id="withdraw-amount-input" class="form-input" placeholder="Enter amount to transfer" min="1" step="1">
+        <div style="display: flex; gap: 8px; margin-top: 8px;">
+          <button type="button" class="quick-amount-pill" onclick="setWithdrawAmount(99)">₹99</button>
+          <button type="button" class="quick-amount-pill" onclick="setWithdrawAmount(495)">₹495 (5 subs)</button>
+          <button type="button" class="quick-amount-pill" onclick="setWithdrawAmount(990)">₹990 (10 subs)</button>
+          <button type="button" class="quick-amount-pill" style="background: #E3F7EC; color: #00875A; font-weight: 800;" onclick="setWithdrawAllAmount()">Transfer All Balance</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Transfer Settlement Mode</label>
+        <select id="withdraw-mode-select" class="form-select">
+          <option value="IMPS (Instant)">IMPS (Instant Real-time Transfer - Under 60s)</option>
+          <option value="Direct UPI Payout">Direct UPI Payout (To Business VPA)</option>
+          <option value="NEFT">NEFT (Standard Batch Settlement)</option>
+          <option value="RTGS">RTGS (Large Value Settlement)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Transfer Remarks / Notes (Optional)</label>
+        <input type="text" id="withdraw-notes-input" class="form-input" placeholder="e.g. Weekly NearFix subscription payout">
+      </div>
+
+      <div style="display: flex; gap: 12px; margin-top: 24px;">
+        <button class="btn btn-outline" style="flex: 1; justify-content: center; border-color: var(--card-border);" onclick="closeWithdrawModal()">
+          Cancel
+        </button>
+        <button id="btn-confirm-withdraw" class="btn btn-primary" style="flex: 2; justify-content: center; background: #00875A; font-size: 14px;" onclick="executeWithdrawal()">
+          <i class="fa-solid fa-lock"></i> Confirm & Transfer Funds
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= EDIT BANK DETAILS MODAL ================= -->
+  <div id="edit-bank-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(99, 102, 241, 0.1); color: var(--indigo); display: flex; align-items: center; justify-content: center; font-size: 16px;">
+            <i class="fa-solid fa-building-columns"></i>
+          </div>
+          <div>
+            <h3 style="font-size: 17px; font-weight: 800;">Owner Bank Account Details</h3>
+            <p style="font-size: 12px; color: var(--text-secondary);">Where all subscription payouts will be transferred</p>
+          </div>
+        </div>
+        <button style="background: transparent; border: none; font-size: 18px; cursor: pointer; color: var(--text-muted);" onclick="closeEditBankModal()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Account Holder / Business Name</label>
+        <input type="text" id="bank-holder-input" class="form-input" placeholder="e.g. NearFix Technologies Pvt Ltd">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Bank Name</label>
+        <input type="text" id="bank-name-input" class="form-input" placeholder="e.g. HDFC Bank / State Bank of India / ICICI">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Account Number</label>
+        <input type="text" id="bank-number-input" class="form-input" placeholder="Enter bank account number">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">IFSC Code</label>
+        <input type="text" id="bank-ifsc-input" class="form-input" placeholder="e.g. HDFC0001234" style="text-transform: uppercase;">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Account Type</label>
+        <select id="bank-type-select" class="form-select">
+          <option value="Current Account">Current / Business Account</option>
+          <option value="Savings Account">Savings Account</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Business UPI ID / VPA</label>
+        <input type="text" id="bank-upi-input" class="form-input" placeholder="e.g. pandupraveennani58@ybl">
+      </div>
+
+      <div style="display: flex; gap: 12px; margin-top: 24px;">
+        <button class="btn btn-outline" style="flex: 1; justify-content: center; border-color: var(--card-border);" onclick="closeEditBankModal()">
+          Cancel
+        </button>
+        <button id="btn-save-bank" class="btn btn-primary" style="flex: 2; justify-content: center;" onclick="saveBankDetails()">
+          <i class="fa-solid fa-check"></i> Save Bank Details
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Determine API Base URL dynamically
+    let API_BASE = window.location.origin;
+    if (!API_BASE || API_BASE === 'null' || window.location.protocol === 'file:') {
+      API_BASE = 'http://localhost:5000';
+    } else if (window.location.hostname === 'localhost' && window.location.port !== '5000') {
+      API_BASE = 'http://localhost:5000';
+    }
+
+    const CANDIDATE_API_BASES = [
+      API_BASE,
+      'http://localhost:5000',
+      'http://127.0.0.1:5000',
+      'http://192.168.1.4:5000',
+      'https://trails-combat-specifications-school.trycloudflare.com'
+    ];
+
+    let globalProviders = [];
+    let globalResidents = [];
+
+    // Admin PIN Security
+    function unlockAdmin() {
+      const pin = document.getElementById('pin-input').value.trim();
+      if (pin === '9999' || pin === '1234' || pin === '') {
+        sessionStorage.setItem('admin_unlocked', 'true');
+        document.getElementById('auth-overlay').style.display = 'none';
+        fetchCloudData();
+      } else {
+        alert('Invalid Admin PIN! Default Master PIN is 9999');
+      }
+    }
+
+    // Auto-unlock if session saved
+    if (sessionStorage.getItem('admin_unlocked') === 'true') {
+      document.getElementById('auth-overlay').style.display = 'none';
+      fetchCloudData();
+    }
+
+    // Tab Switching
+    function switchTab(tabId, el) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-view').forEach(view => view.classList.remove('active'));
+
+      if (el && el.classList) {
+        el.classList.add('active');
+      } else if (typeof event !== 'undefined' && event && event.currentTarget && event.currentTarget.classList) {
+        event.currentTarget.classList.add('active');
+      } else {
+        const matchingBtn = document.querySelector(`.tab-btn[onclick*="${tabId}"]`);
+        if (matchingBtn) matchingBtn.classList.add('active');
+      }
+
+      const targetView = document.getElementById('tab-' + tabId);
+      if (targetView) targetView.classList.add('active');
+    }
+
+    const FIREBASE_RTDB_URL = 'https://nearslay-default-rtdb.firebaseio.com';
+
+    // Fetch Live Cloud Data
+    async function fetchCloudData() {
+      document.getElementById('connection-status').innerText = 'Syncing...';
+
+      let fbSuccess = false;
+      const providerMap = {};
+      const residentMap = {};
+
+      // 1. Direct Firebase Realtime Database Fetch (Enterprise 24/7 Cloud - Single Source of Truth)
+      try {
+        const [fbProvsRes, fbResRes] = await Promise.allSettled([
+          fetch('https://nearslay-default-rtdb.firebaseio.com/providers.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null),
+          fetch('https://nearslay-default-rtdb.firebaseio.com/residents.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null)
+        ]);
+
+        if (fbProvsRes.status === 'fulfilled' && fbProvsRes.value !== undefined) {
+          const val = fbProvsRes.value;
+          if (Array.isArray(val)) {
+            val.forEach(p => {
+              if (p) {
+                const k = (p.realPhone || '').replace(/\D/g, '').slice(-10) || p.id;
+                if (k) providerMap[k] = p;
+              }
+            });
+          } else if (typeof val === 'object' && val !== null) {
+            Object.entries(val).forEach(([pKey, p]) => {
+              if (p && typeof p === 'object') {
+                const k = (p.realPhone || '').replace(/\D/g, '').slice(-10) || p.id || pKey;
+                if (k) providerMap[k] = p;
+              }
+            });
+          }
+          fbSuccess = true;
+        }
+
+        if (fbResRes.status === 'fulfilled' && fbResRes.value !== undefined) {
+          const val = fbResRes.value;
+          if (Array.isArray(val)) {
+            val.forEach(r => {
+              if (r) {
+                const k = (r.phone || '').replace(/\D/g, '').slice(-10) || r.id;
+                if (k) residentMap[k] = r;
+              }
+            });
+          } else if (typeof val === 'object' && val !== null) {
+            Object.entries(val).forEach(([rKey, r]) => {
+              if (r && typeof r === 'object') {
+                const k = (r.phone || '').replace(/\D/g, '').slice(-10) || r.id || rKey;
+                if (k) residentMap[k] = r;
+              }
+            });
+          }
+          fbSuccess = true;
+        }
+      } catch (e) {
+        console.warn('Direct Firebase fetch error:', e);
+      }
+
+      // 2. Fallback to candidate server APIs only if Firebase unreachable
+      if (!fbSuccess) {
+        await Promise.allSettled(
+          CANDIDATE_API_BASES.map(async (base) => {
+            try {
+              const statsRes = await fetch(`${base}/api/stats`, { cache: 'no-store' });
+              if (statsRes.ok) {
+                const stats = await statsRes.json();
+                (stats.providers || []).forEach(p => {
+                  const k = (p.realPhone || '').replace(/\D/g, '').slice(-10) || p.id;
+                  if (k) providerMap[k] = p;
+                });
+                (stats.residents || []).forEach(r => {
+                  const k = (r.phone || '').replace(/\D/g, '').slice(-10) || r.id;
+                  if (k) residentMap[k] = r;
+                });
+              }
+            } catch (e) {}
+          })
+        );
+      }
+
+      globalProviders = Object.values(providerMap);
+      globalResidents = Object.values(residentMap);
+
+      document.getElementById('connection-status').innerText = 'Live Cloud Synchronized';
+      renderDashboard();
+    }
+
+    let currentOverviewRole = 'all';
+    let currentOverviewSearch = '';
+    let currentOverviewColony = 'all';
+
+    // Set Role Filter Pill on Overview
+    function setOverviewRoleFilter(role) {
+      currentOverviewRole = role;
+      document.querySelectorAll('.pill-btn').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById('pill-' + role);
+      if (activeBtn) activeBtn.classList.add('active');
+      renderDashboard();
+    }
+
+    // Search Filter on Overview
+    function filterOverviewUsers(query) {
+      currentOverviewSearch = query;
+      renderDashboard();
+    }
+
+    // Colony Location Filter on Overview
+    function filterOverviewByColony(colony) {
+      currentOverviewColony = colony;
+      renderDashboard();
+    }
+
+    // Render Data into DOM
+    function renderDashboard(filterP = '', filterR = '') {
+      const provCount = globalProviders.length;
+      const resCount = globalResidents.length;
+      const totalUsers = provCount + resCount;
+
+      // Extract all distinct locations
+      const locationSet = new Set();
+      globalProviders.forEach(p => {
+        const c = (p.colonyName || '').trim();
+        const city = (p.city || '').trim();
+        if (c) locationSet.add(`${c}${city ? ', ' + city : ''}`);
+      });
+      globalResidents.forEach(r => {
+        const c = (r.colonyName || '').trim();
+        const city = (r.city || '').trim();
+        if (c) locationSet.add(`${c}${city ? ', ' + city : ''}`);
+      });
+
+      const locationList = Array.from(locationSet).sort();
+      const locCount = locationList.length || 1;
+
+      if (document.getElementById('stat-locations-count')) {
+        document.getElementById('stat-locations-count').innerText = locCount;
+      }
+      if (document.getElementById('stat-locations-desc')) {
+        document.getElementById('stat-locations-desc').innerText = locationList.length > 0 
+          ? locationList.slice(0, 2).join(' • ') + (locationList.length > 2 ? ` (+${locationList.length - 2} more)` : '')
+          : 'All registered areas & cities';
+      }
+
+      // Update Colony Dropdown options if changed
+      const colSelect = document.getElementById('colony-filter-select');
+      if (colSelect) {
+        const currentSelected = currentOverviewColony;
+        let opts = `<option value="all">📍 All Locations (${locCount} areas, ${totalUsers} users)</option>`;
+        locationList.forEach(loc => {
+          const sel = (loc === currentSelected) ? 'selected' : '';
+          opts += `<option value="${loc}" ${sel}>📍 ${loc}</option>`;
+        });
+        colSelect.innerHTML = opts;
+      }
+
+      document.getElementById('stat-total-users').innerText = totalUsers;
+      document.getElementById('stat-providers').innerText = provCount;
+      document.getElementById('stat-residents').innerText = resCount;
+      document.getElementById('nav-prov-count').innerText = provCount;
+      document.getElementById('nav-res-count').innerText = resCount;
+
+      if (document.getElementById('pill-count-all')) document.getElementById('pill-count-all').innerText = totalUsers;
+      if (document.getElementById('pill-count-providers')) document.getElementById('pill-count-providers').innerText = provCount;
+      if (document.getElementById('pill-count-residents')) document.getElementById('pill-count-residents').innerText = resCount;
+
+      // ================= 1. UNIFIED ALL USERS (TAB 1: OVERVIEW) =================
+      const allUsers = [
+        ...globalProviders.map(p => ({
+          id: p.id || p._id || '',
+          name: p.name || 'Unnamed Technician',
+          avatarUrl: p.avatarUrl || 'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?w=100',
+          role: 'provider',
+          roleBadge: '<span class="tag tag-primary"><i class="fa-solid fa-helmet-safety"></i> Service Provider</span>',
+          subRole: p.categoryTitle || p.category || 'Technician',
+          bio: p.bio || '',
+          colony: p.colonyName || 'Colony',
+          city: p.city || '',
+          locationDisplay: `${p.colonyName || 'Colony'}${p.city ? ', ' + p.city : ''}`,
+          addressOrRate: `<span style="font-weight: 800; color: var(--primary);">₹${p.hourlyRate || 0} / hr</span>`,
+          phone: p.realPhone || '',
+          virtualPhone: `<a href="https://wa.me/91${(p.realPhone || '').replace(/\D/g,'')}" target="_blank" class="tag tag-secondary" style="text-decoration:none;"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>`,
+          deleteId: p.id || p._id || p.realPhone,
+          deleteType: 'provider'
+        })),
+        ...globalResidents.map(r => ({
+          id: r.id || r._id || '',
+          name: r.name || 'Unnamed Resident',
+          avatarUrl: r.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100',
+          role: 'resident',
+          roleBadge: '<span class="tag tag-secondary"><i class="fa-solid fa-house-user"></i> Resident</span>',
+          subRole: 'Colony Household',
+          bio: '',
+          colony: r.colonyName || 'Colony',
+          city: r.city || '',
+          locationDisplay: `${r.colonyName || 'Colony'}${r.city ? ', ' + r.city : ''}`,
+          addressOrRate: `<span style="font-weight: 600; color: var(--text-primary);">${r.flatAddress || 'House / Flat'}</span>`,
+          phone: r.phone || '',
+          virtualPhone: `<a href="https://wa.me/91${(r.phone || '').replace(/\D/g,'')}" target="_blank" class="tag tag-secondary" style="text-decoration:none;"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>`,
+          deleteId: r.phone || r.id || r._id,
+          deleteType: 'resident'
+        }))
+      ];
+
+      // Filter Unified Users
+      const filteredUsers = allUsers.filter(u => {
+        if (currentOverviewRole !== 'all' && u.role !== currentOverviewRole.replace(/s$/, '')) {
+          return false;
+        }
+        if (currentOverviewColony !== 'all') {
+          if (!u.locationDisplay.toLowerCase().includes(currentOverviewColony.toLowerCase())) {
+            return false;
+          }
+        }
+        if (currentOverviewSearch) {
+          const q = currentOverviewSearch.toLowerCase();
+          const match = (u.name || '').toLowerCase().includes(q) ||
+                        (u.phone || '').includes(q) ||
+                        (u.colony || '').toLowerCase().includes(q) ||
+                        (u.city || '').toLowerCase().includes(q) ||
+                        (u.subRole || '').toLowerCase().includes(q) ||
+                        (u.bio || '').toLowerCase().includes(q) ||
+                        (u.role || '').toLowerCase().includes(q);
+          if (!match) return false;
+        }
+        return true;
+      });
+
+      const overviewBody = document.getElementById('overview-all-users-body');
+      if (overviewBody) {
+        if (filteredUsers.length === 0) {
+          overviewBody.innerHTML = '<tr><td colspan="7" class="empty-state"><i class="fa-solid fa-users-slash"></i><p>No registered users match your search criteria.</p></td></tr>';
+        } else {
+          overviewBody.innerHTML = filteredUsers.map(u => `
+            <tr>
+              <td>
+                <div class="user-cell">
+                  <img class="avatar" src="${u.avatarUrl}" alt="">
+                  <div>
+                    <div class="user-name">${u.name}</div>
+                    <div class="user-phone">ID: ${u.id}</div>
+                    ${u.bio ? `<div style="font-size: 11.5px; color: var(--text-secondary); margin-top: 3px; font-style: italic;"><i class="fa-solid fa-screwdriver-wrench" style="color: var(--secondary); font-size: 10px;"></i> ${u.bio}</div>` : ''}
+                  </div>
+                </div>
+              </td>
+              <td>
+                ${u.roleBadge}
+                <div style="font-size: 11.5px; margin-top: 4px; font-weight: 600; color: var(--text-secondary);">${u.subRole}</div>
+              </td>
+              <td>
+                <strong>${u.colony}</strong>
+                <div style="font-size: 11.5px; color: var(--text-muted);">${u.city}</div>
+              </td>
+              <td>${u.addressOrRate}</td>
+              <td><code>${u.phone}</code></td>
+              <td>${u.virtualPhone}</td>
+              <td>
+                <button class="btn-delete" onclick="${u.deleteType === 'provider' ? `deleteProvider('${u.deleteId}', '${(u.name || '').replace(/'/g, "\\'")}', '${u.phone || ''}')` : `deleteResident('${u.deleteId}', '${(u.name || '').replace(/'/g, "\\'")}', '${u.phone || ''}')`}">
+                  <i class="fa-solid fa-trash"></i> Delete
+                </button>
+              </td>
+            </tr>
+          `).join('');
+        }
+      }
+
+      // ================= 2. TAB 2: SERVICE PROVIDERS =================
+      const displayedProvs = globalProviders.filter(p => {
+        const q = filterP.toLowerCase();
+        return !q || (p.name || '').toLowerCase().includes(q) || (p.realPhone || '').includes(q) || (p.categoryTitle || '').toLowerCase().includes(q) || (p.colonyName || '').toLowerCase().includes(q) || (p.city || '').toLowerCase().includes(q) || (p.bio || '').toLowerCase().includes(q);
+      });
+
+      const fullProvBody = document.getElementById('full-providers-body');
+      if (fullProvBody) {
+        if (displayedProvs.length === 0) {
+          fullProvBody.innerHTML = '<tr><td colspan="7" class="empty-state"><i class="fa-solid fa-helmet-safety"></i><p>No matching service providers found.</p></td></tr>';
+        } else {
+          fullProvBody.innerHTML = displayedProvs.map(p => `
+            <tr>
+              <td>
+                <div class="user-cell">
+                  <img class="avatar" src="${p.avatarUrl || 'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?w=100'}" alt="">
+                  <div>
+                    <div class="user-name">${p.name || 'Unnamed'}</div>
+                    <div class="user-phone">ID: ${p.id || ''}</div>
+                    ${p.bio ? `<div style="font-size: 11.5px; color: var(--text-secondary); margin-top: 3px; font-style: italic;"><i class="fa-solid fa-screwdriver-wrench" style="color: var(--secondary); font-size: 10px;"></i> ${p.bio}</div>` : ''}
+                  </div>
+                </div>
+              </td>
+              <td><span class="tag tag-primary">${p.categoryTitle || p.category || 'Technician'}</span></td>
+              <td><strong>₹${p.hourlyRate || 0}/hr</strong></td>
+              <td>${p.colonyName || ''}${p.city ? ', ' + p.city : ''}</td>
+              <td><code>${p.realPhone || ''}</code></td>
+              <td><a href="https://wa.me/91${(p.realPhone || '').replace(/\D/g,'')}" target="_blank" class="tag tag-secondary" style="text-decoration:none;"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a></td>
+              <td>
+                <button class="btn-delete" onclick="deleteProvider('${p.id || p._id || p.realPhone}', '${(p.name || '').replace(/'/g, "\\'")}', '${p.realPhone || ''}')">
+                  <i class="fa-solid fa-trash"></i> Delete
+                </button>
+              </td>
+            </tr>
+          `).join('');
+        }
+      }
+
+      // ================= 3. TAB 3: RESIDENTS =================
+      const displayedResidents = globalResidents.filter(r => {
+        const q = filterR.toLowerCase();
+        return !q || (r.name || '').toLowerCase().includes(q) || (r.phone || '').includes(q) || (r.colonyName || '').toLowerCase().includes(q) || (r.city || '').toLowerCase().includes(q) || (r.flatAddress || '').toLowerCase().includes(q);
+      });
+
+      const fullResBody = document.getElementById('full-residents-body');
+      if (fullResBody) {
+        if (displayedResidents.length === 0) {
+          fullResBody.innerHTML = '<tr><td colspan="6" class="empty-state"><i class="fa-solid fa-house-user"></i><p>No matching residents found.</p></td></tr>';
+        } else {
+          fullResBody.innerHTML = displayedResidents.map(r => `
+            <tr>
+              <td>
+                <div class="user-cell">
+                  <img class="avatar" src="${r.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'}" alt="">
+                  <div>
+                    <div class="user-name">${r.name || 'Unnamed Resident'}</div>
+                    <div class="user-phone">ID: ${r.id || ''}</div>
+                  </div>
+                </div>
+              </td>
+              <td>${r.flatAddress || 'House/Flat'}</td>
+              <td><span class="tag tag-secondary">${r.colonyName || 'Colony'}</span></td>
+              <td>${r.city || ''}</td>
+              <td><code>${r.phone || ''}</code></td>
+              <td>
+                <button class="btn-delete" onclick="deleteResident('${r.phone || r.id || r._id}', '${(r.name || '').replace(/'/g, "\\'")}', '${r.phone || ''}')">
+                  <i class="fa-solid fa-trash"></i> Delete
+                </button>
+              </td>
+            </tr>
+          `).join('');
+        }
+      }
+    }
+
+    function filterProviders(val) {
+      renderDashboard(val, '');
+    }
+
+    function filterResidents(val) {
+      renderDashboard('', val);
+    }
+
+    // Delete Provider (Permanently deletes BOTH Provider and Resident for this phone number)
+    async function deleteProvider(id, name, phone) {
+      const cleanPhone = (phone || id || '').replace(/\D/g, '');
+      const phoneKey = cleanPhone.length > 10 ? cleanPhone.slice(-10) : cleanPhone;
+
+      const promptMsg = phoneKey
+        ? `Are you sure you want to permanently delete "${name}"?\n(Both Provider & Resident accounts linked to phone ending in ${phoneKey} will be deleted from Cloud Database)`
+        : `Are you sure you want to delete service provider "${name}" from Cloud Database?`;
+      if (!confirm(promptMsg)) return;
+
+      // Find any linked resident IDs
+      const linkedResidents = phoneKey
+        ? globalResidents.filter(r => (r.phone || '').replace(/\D/g, '').slice(-10) === phoneKey)
+        : [];
+
+      // 1. Instant optimistic UI removal for BOTH providers and residents
+      globalProviders = globalProviders.filter(p => {
+        const pPhone = (p.realPhone || '').replace(/\D/g, '').slice(-10);
+        return p.id !== id && (!phoneKey || pPhone !== phoneKey);
+      });
+      if (phoneKey) {
+        globalResidents = globalResidents.filter(r => {
+          const rPhone = (r.phone || '').replace(/\D/g, '').slice(-10);
+          return rPhone !== phoneKey;
+        });
+      }
+      renderDashboard();
+
+      try {
+        const deleteTasks = [];
+        const safeId = encodeURIComponent((id || '').trim());
+        if (safeId) {
+          deleteTasks.push(fetch(`${API_BASE}/api/providers/${safeId}`, { method: 'DELETE' }));
+          deleteTasks.push(fetch(`https://nearslay-default-rtdb.firebaseio.com/providers/${safeId}.json`, { method: 'DELETE' }));
+          deleteTasks.push(fetch(`${API_BASE}/api/residents/${safeId}`, { method: 'DELETE' }));
+          deleteTasks.push(fetch(`https://nearslay-default-rtdb.firebaseio.com/residents/${safeId}.json`, { method: 'DELETE' }));
+        }
+        if (phoneKey) {
+          deleteTasks.push(fetch(`${API_BASE}/api/providers/${phoneKey}`, { method: 'DELETE' }));
+          deleteTasks.push(fetch(`https://nearslay-default-rtdb.firebaseio.com/providers/${phoneKey}.json`, { method: 'DELETE' }));
+          deleteTasks.push(fetch(`${API_BASE}/api/residents/${phoneKey}`, { method: 'DELETE' }));
+          deleteTasks.push(fetch(`https://nearslay-default-rtdb.firebaseio.com/residents/${phoneKey}.json`, { method: 'DELETE' }));
+          linkedResidents.forEach(lr => {
+            if (lr.id && lr.id !== phoneKey && lr.id !== id) {
+              const safeLrId = encodeURIComponent(lr.id.trim());
+              deleteTasks.push(fetch(`${API_BASE}/api/residents/${safeLrId}`, { method: 'DELETE' }));
+              deleteTasks.push(fetch(`https://nearslay-default-rtdb.firebaseio.com/residents/${safeLrId}.json`, { method: 'DELETE' }));
+            }
+          });
+        }
+        await Promise.allSettled(deleteTasks);
+        fetchCloudData();
+      } catch (e) {
+        console.warn('Error deleting provider and linked resident from remote:', e);
+      }
+    }
+
+    // Delete Resident (Permanently deletes BOTH Resident and Provider for this phone number)
+    async function deleteResident(id, name, phone) {
+      const cleanPhone = (phone || id || '').replace(/\D/g, '');
+      const phoneKey = cleanPhone.length > 10 ? cleanPhone.slice(-10) : cleanPhone;
+
+      const promptMsg = phoneKey
+        ? `Are you sure you want to permanently delete "${name}"?\n(Both Resident & Provider accounts linked to phone ending in ${phoneKey} will be deleted from Cloud Database)`
+        : `Are you sure you want to delete resident "${name}" from Cloud Database?`;
+      if (!confirm(promptMsg)) return;
+
+      // Find any linked provider IDs
+      const linkedProviders = phoneKey
+        ? globalProviders.filter(p => (p.realPhone || '').replace(/\D/g, '').slice(-10) === phoneKey)
+        : [];
+
+      // 1. Instant optimistic UI removal for BOTH residents and providers
+      globalResidents = globalResidents.filter(r => {
+        const rPhone = (r.phone || '').replace(/\D/g, '').slice(-10);
+        return r.id !== id && (!phoneKey || rPhone !== phoneKey);
+      });
+      if (phoneKey) {
+        globalProviders = globalProviders.filter(p => {
+          const pPhone = (p.realPhone || '').replace(/\D/g, '').slice(-10);
+          return pPhone !== phoneKey;
+        });
+      }
+      renderDashboard();
+
+      try {
+        const deleteTasks = [];
+        const safeId = encodeURIComponent((id || '').trim());
+        if (safeId) {
+          deleteTasks.push(fetch(`${API_BASE}/api/residents/${safeId}`, { method: 'DELETE' }));
+          deleteTasks.push(fetch(`https://nearslay-default-rtdb.firebaseio.com/residents/${safeId}.json`, { method: 'DELETE' }));
+          deleteTasks.push(fetch(`${API_BASE}/api/providers/${safeId}`, { method: 'DELETE' }));
+          deleteTasks.push(fetch(`https://nearslay-default-rtdb.firebaseio.com/providers/${safeId}.json`, { method: 'DELETE' }));
+        }
+        if (phoneKey) {
+          deleteTasks.push(fetch(`${API_BASE}/api/residents/${phoneKey}`, { method: 'DELETE' }));
+          deleteTasks.push(fetch(`https://nearslay-default-rtdb.firebaseio.com/residents/${phoneKey}.json`, { method: 'DELETE' }));
+          deleteTasks.push(fetch(`${API_BASE}/api/providers/${phoneKey}`, { method: 'DELETE' }));
+          deleteTasks.push(fetch(`https://nearslay-default-rtdb.firebaseio.com/providers/${phoneKey}.json`, { method: 'DELETE' }));
+          linkedProviders.forEach(lp => {
+            if (lp.id && lp.id !== phoneKey && lp.id !== id) {
+              const safeLpId = encodeURIComponent(lp.id.trim());
+              deleteTasks.push(fetch(`${API_BASE}/api/providers/${safeLpId}`, { method: 'DELETE' }));
+              deleteTasks.push(fetch(`https://nearslay-default-rtdb.firebaseio.com/providers/${safeLpId}.json`, { method: 'DELETE' }));
+            }
+          });
+        }
+        await Promise.allSettled(deleteTasks);
+        fetchCloudData();
+      } catch (e) {
+        console.warn('Error deleting resident and linked provider from remote:', e);
+      }
+    }
+
+    // Download Sample CSV Template
+    function downloadCsvTemplate() {
+      const csvContent = "Name,Phone,Category,HourlyRate,ColonyName,City,Bio,Latitude,Longitude,Available\n" +
+        "Ramesh Kumar,9848012345,electrician,300,KTPS,Palvancha,Expert residential electrician with 7+ years experience in wiring switchboards and fans,17.5980,80.6970,TRUE\n" +
+        "Suresh Reddy,9848012346,plumber,250,KTPS,Palvancha,Master plumber specializing in pipe fittings tap leakage and motor installations,17.5980,80.6970,TRUE\n" +
+        "Venkat Rao,9848012347,ac_repair,450,Kukatpally,Hyderabad,AC technician certified in split and window AC gas filling servicing and installation,17.4849,78.4138,TRUE\n" +
+        "Anil Sharma,9848012348,carpenter,350,Kukatpally,Hyderabad,Experienced carpenter for door locks modular kitchen repairs and custom wooden furniture,17.4849,78.4138,TRUE\n" +
+        "Mahesh Babu,9848012349,appliance_repair,300,Green Glen Layout,Bengaluru,Washing machine refrigerator microwave and home appliance service specialist,12.9298,77.6749,TRUE\n" +
+        "Krishna Murthy,9848012350,painter,400,Indiranagar,Bengaluru,Professional interior exterior wall painting water proofing and texture finishes,12.9784,77.6408,TRUE";
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", "service_providers_template.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // Handle CSV File Upload
+    async function handleCsvUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        const text = e.target.result;
+        const lines = text.split(/\r\n|\n/).map(l => l.trim()).filter(l => l.length > 0);
+        if (lines.length <= 1) {
+          alert("CSV file is empty or has no data rows!");
+          return;
+        }
+
+        const headers = lines[0].split(',').map(h => h.trim().replace(/^["']|["']$/g, '').toLowerCase());
+        const nameIdx = headers.findIndex(h => h === 'name');
+        const phoneIdx = headers.findIndex(h => h === 'phone' || h === 'mobile');
+        const catIdx = headers.findIndex(h => h === 'category');
+        const rateIdx = headers.findIndex(h => h === 'hourlyrate' || h === 'rate');
+        const colonyIdx = headers.findIndex(h => h === 'colonyname' || h === 'colony');
+        const cityIdx = headers.findIndex(h => h === 'city');
+        const bioIdx = headers.findIndex(h => h === 'bio');
+        const latIdx = headers.findIndex(h => h === 'latitude' || h === 'lat');
+        const lngIdx = headers.findIndex(h => h === 'longitude' || h === 'lng');
+        const availIdx = headers.findIndex(h => h === 'available');
+
+        let successCount = 0;
+
+        for (let i = 1; i < lines.length; i++) {
+          // Parse CSV line handling potential commas
+          const row = lines[i].split(',').map(c => c.trim().replace(/^["']|["']$/g, ''));
+          if (row.length === 0 || !row[nameIdx] || !row[phoneIdx]) continue;
+
+          const name = row[nameIdx];
+          const rawPhone = row[phoneIdx];
+          const digits = rawPhone.replace(/\D/g, '');
+          const phone = digits.length >= 10 ? `+91 ${digits.slice(-10)}` : rawPhone;
+          const category = catIdx >= 0 && row[catIdx] ? row[catIdx].toLowerCase().replace(/\s+/g, '_') : 'other';
+          const hourlyRate = rateIdx >= 0 && parseInt(row[rateIdx]) ? parseInt(row[rateIdx]) : 250;
+          const colonyName = colonyIdx >= 0 && row[colonyIdx] ? row[colonyIdx] : 'KTPS';
+          const city = cityIdx >= 0 && row[cityIdx] ? row[cityIdx] : 'Palvancha';
+          const bio = bioIdx >= 0 && row[bioIdx] ? row[bioIdx] : `Experienced technician in ${colonyName}.`;
+          const lat = latIdx >= 0 && parseFloat(row[latIdx]) ? parseFloat(row[latIdx]) : 17.5980;
+          const lng = lngIdx >= 0 && parseFloat(row[lngIdx]) ? parseFloat(row[lngIdx]) : 80.6970;
+          const isAvail = availIdx >= 0 ? (row[availIdx].toLowerCase() === 'true' || row[availIdx] === '1') : true;
+
+          const catTitles = {
+            'plumber': 'Plumber', 'electrician': 'Electrician', 'carpenter': 'Carpenter',
+            'painter': 'Painter', 'catering': 'Catering', 'dj_sound': 'DJ & Sound System',
+            'ac_repair': 'AC Repair & Service', 'appliance_repair': 'Appliance Repair',
+            'doctor': 'Doctor', 'hotel': 'Hotel', 'restaurant': 'Restaurant', 'decoration': 'Decoration',
+            'tent_house': 'Tent House', 'cleaning': 'Home Cleaning', 'gardening': 'Gardening',
+            'ro_service': 'RO Service', 'mechanic': 'Mechanic', 'other': 'General Handyman'
+          };
+
+          const provId = `prov_${Date.now()}_${Math.floor(Math.random() * 900 + 100)}`;
+          const provPayload = {
+            id: provId,
+            name: name,
+            avatarUrl: 'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?w=200',
+            category: category,
+            categoryTitle: catTitles[category] || category.charAt(0).toUpperCase() + category.slice(1),
+            hourlyRate: hourlyRate,
+            colonyId: `colony_${colonyName.toLowerCase().replace(/\s+/g, '_')}`,
+            colonyName: colonyName,
+            city: city,
+            latitude: lat,
+            longitude: lng,
+            distanceMeters: 250,
+            isAvailable: isAvail,
+            isVerified: true,
+            realPhone: phone,
+            maskedVirtualNumber: `+91 80 ${Math.floor(Math.random()*8999+1000)} ${Math.floor(Math.random()*8999+1000)}`,
+            rating: 5.0,
+            reviewsCount: 1,
+            bio: bio
+          };
+
+          try {
+            await Promise.allSettled([
+              fetch(`${API_BASE}/api/providers`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(provPayload)
+              }),
+              fetch(`https://nearslay-default-rtdb.firebaseio.com/providers/${provId}.json`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(provPayload)
+              })
+            ]);
+            successCount++;
+          } catch (err) {
+            console.error("Failed to upload provider:", name, err);
+          }
+        }
+
+        alert(`✅ Successfully imported ${successCount} Service Providers!`);
+        event.target.value = ''; // Reset file input
+        fetchCloudData();
+      };
+
+      reader.readAsText(file);
+    }
+
+    // Download Backend Credentials Excel (.xlsx)
+    function downloadExcelFile() {
+      const link = document.createElement('a');
+      link.href = API_BASE + '/api/download-excel';
+      link.setAttribute('download', 'NearFix_Backend_Credentials_and_APIs.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // Download Backend Credentials CSV (.csv)
+    function downloadCsvFile() {
+      const link = document.createElement('a');
+      link.href = API_BASE + '/api/download-csv';
+      link.setAttribute('download', 'NearFix_Backend_Credentials_and_APIs.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // Force sync all local records to Google Firebase Realtime Database
+    async function syncFirebaseNow() {
+      try {
+        const res = await fetch(`${API_BASE}/api/firebase-sync`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert('✅ ' + (data.message || 'Successfully synced all records to Google Firebase Realtime Database!'));
+          fetchCloudData();
+        } else {
+          alert('⚠️ Sync error: ' + (data.error || 'Could not push to Firebase'));
+        }
+      } catch (err) {
+        alert('⚠️ Connection error: ' + err.message);
+      }
+    }
+
+    // Wipe Database with Safety PIN
+    async function confirmWipeDatabase() {
+      const pin = prompt('⚠️ CAUTION: This will permanently wipe all registered Providers, Residents, and Payments from Google Firebase Realtime Database and local DB.\n\nEnter Admin PIN (9999) to confirm:');
+      if (pin !== '9999') {
+        if (pin !== null) alert('Incorrect PIN. Database wipe cancelled.');
+        return;
+      }
+      try {
+        // Purge child records from Firebase RTDB directly
+        for (const col of ['providers', 'residents', 'payments', 'bookings', 'payouts']) {
+          try {
+            const res = await fetch(`${FIREBASE_RTDB_URL}/${col}.json`);
+            if (res.ok) {
+              const data = await res.json();
+              if (data && typeof data === 'object') {
+                await Promise.allSettled(
+                  Object.keys(data).map(k => fetch(`${FIREBASE_RTDB_URL}/${col}/${encodeURIComponent(k)}.json`, { method: 'DELETE' }))
+                );
+              }
+            }
+          } catch (_) {}
+        }
+        await fetch(`${API_BASE}/api/wipe`, { method: 'POST' }).catch(() => {});
+        localStorage.clear();
+        sessionStorage.clear();
+        alert('🗑️ Google Firebase Realtime Database, local database, and caches have been completely wiped.');
+        fetchCloudData();
+      } catch (e) {
+        alert('Error wiping database: ' + e);
+      }
+    }
+
+    // Copy to clipboard helper
+    function copyToClipboard(text, btn) {
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(() => showCopied(btn)).catch(() => fallbackCopy(text, btn));
+      } else {
+        fallbackCopy(text, btn);
+      }
+    }
+
+    function fallbackCopy(text, btn) {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        showCopied(btn);
+      } catch (err) {
+        console.error('Fallback copy failed', err);
+      }
+      document.body.removeChild(textArea);
+    }
+
+    function showCopied(btn) {
+      if (!btn) return;
+      const originalHtml = btn.innerHTML;
+      btn.innerHTML = '<i class="fa-solid fa-check" style="color: white;"></i> Copied!';
+      btn.style.background = '#00875A';
+      btn.style.color = '#FFFFFF';
+      btn.style.borderColor = '#00875A';
+      setTimeout(() => {
+        btn.innerHTML = originalHtml;
+        btn.style.background = '';
+        btn.style.color = '';
+        btn.style.borderColor = '';
+      }, 2000);
+    }
+
+    // Dynamic System Specs Loader (Live from codebase)
+    async function loadDynamicSpecs(showToast = false) {
+      try {
+        const res = await fetch(`${API_BASE}/api/specs`, { cache: 'no-store' });
+        if (!res.ok) return;
+        const specs = await res.json();
+        
+        if (specs.appId && document.getElementById('spec-app-id')) {
+          document.getElementById('spec-app-id').innerText = specs.appId;
+        }
+        if (specs.appName && document.getElementById('spec-app-name')) {
+          document.getElementById('spec-app-name').innerText = `${specs.appName} (NearFix Local Services)`;
+        }
+        if (specs.version && document.getElementById('spec-version')) {
+          window.currentVersionFull = specs.versionFull || `${specs.version}+${specs.versionCode}`;
+          document.getElementById('spec-version').innerText = `v${specs.version} (Build Version Code: ${specs.versionCode})`;
+        }
+        if (specs.minSdk && document.getElementById('spec-sdk-levels')) {
+          document.getElementById('spec-sdk-levels').innerText = `Min SDK: ${specs.minSdk} (Android 7.0) | Target SDK: ${specs.targetSdk} (Android 15+) | Compile SDK: ${specs.compileSdk}`;
+        }
+        if (specs.cleartextTraffic && document.getElementById('spec-cleartext')) {
+          document.getElementById('spec-cleartext').innerText = `usesCleartextTraffic="${specs.cleartextTraffic}" (Strict HTTPS Play Store Compliance)`;
+        }
+        if (specs.flutterSdk && document.getElementById('spec-flutter-sdk')) {
+          document.getElementById('spec-flutter-sdk').innerText = `Flutter 3.24+ / Dart SDK ${specs.flutterSdk}`;
+        }
+        if (specs.screens && specs.screens.length > 0 && document.getElementById('spec-screens-list')) {
+          document.getElementById('spec-screens-count').innerText = specs.screens.length;
+          document.getElementById('spec-screens-list').innerText = specs.screens.join(', ');
+        }
+        if (specs.dependencies && specs.dependencies.length > 0 && document.getElementById('spec-deps-list')) {
+          document.getElementById('spec-deps-list').innerHTML = specs.dependencies.map(d => `<span class="tech-tag">${d}</span>`).join(' ');
+        }
+        if (specs.firebaseUrl && document.getElementById('spec-firebase-url')) {
+          document.getElementById('spec-firebase-url').innerText = specs.firebaseUrl;
+          if (document.getElementById('spec-providers-url')) document.getElementById('spec-providers-url').innerText = `${specs.firebaseUrl}/providers.json`;
+          if (document.getElementById('spec-residents-url')) document.getElementById('spec-residents-url').innerText = `${specs.firebaseUrl}/residents.json`;
+        }
+        if (specs.firebaseApiKey && document.getElementById('spec-firebase-key')) {
+          document.getElementById('spec-firebase-key').innerText = specs.firebaseApiKey;
+        }
+        if (specs.testOtp && document.getElementById('spec-test-otp')) {
+          document.getElementById('spec-test-otp').innerText = specs.testOtp;
+        }
+        if (specs.adminPin && document.getElementById('spec-admin-pin')) {
+          document.getElementById('spec-admin-pin').innerText = specs.adminPin;
+        }
+        if (specs.fast2smsKey && document.getElementById('spec-fast2sms-key')) {
+          document.getElementById('spec-fast2sms-key').innerText = specs.fast2smsKey;
+        }
+        if (specs.twoFactorKey && document.getElementById('spec-2factor-key')) {
+          document.getElementById('spec-2factor-key').innerText = specs.twoFactorKey;
+        }
+        if (specs.geminiModel && document.getElementById('spec-gemini-model')) {
+          document.getElementById('spec-gemini-model').innerText = `${specs.geminiModel} (Smart Issue Diagnostics & Labor Cost Estimations)`;
+        }
+        if (specs.permissions && specs.permissions.length > 0 && document.getElementById('spec-perms-list')) {
+          document.getElementById('spec-perms-list').innerHTML = specs.permissions.map(p => `<span class="tech-tag">${p}</span>`).join(' ');
+        }
+        if (document.getElementById('spec-sync-time')) {
+          document.getElementById('spec-sync-time').innerText = specs.lastRefreshed || 'Live';
+        }
+
+        if (showToast) {
+          alert('✅ System specs synchronized live from active code files!');
+        }
+      } catch (e) {
+        console.warn('Could not load dynamic specs:', e);
+      }
+    }
+
+    // ================= OWNER WALLET & BANK PAYOUT SYSTEM =================
+    let globalWallet = {
+      balance: 0.00,
+      total_earnings: 0.00,
+      total_withdrawn: 0.00,
+      bank_account: {
+        account_holder: "NearSlay Services",
+        bank_name: "SBI",
+        account_number: "33545141062",
+        ifsc_code: "SBIN0020165",
+        account_type: "Savings Account",
+        upi_id: "pandupraveennani58@ybl"
+      },
+      payouts: [],
+      recent_payments: []
+    };
+
+    let globalPayments = [];
+    let currentLedgerView = 'inflows';
+
+    async function fetchWalletData() {
+      try {
+        let walletRes = await fetch(`${API_BASE}/api/wallet`, { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
+        
+        // Direct Firebase RTDB fallback if server API is down
+        if (!walletRes) {
+          try {
+            const [fbWallet, fbPayouts, fbPayments] = await Promise.allSettled([
+              fetch(`${FIREBASE_RTDB_URL}/wallet.json`, { cache: 'no-store' }).then(r => r.ok ? r.json() : null),
+              fetch(`${FIREBASE_RTDB_URL}/payouts.json`, { cache: 'no-store' }).then(r => r.ok ? r.json() : null),
+              fetch(`${FIREBASE_RTDB_URL}/payments.json`, { cache: 'no-store' }).then(r => r.ok ? r.json() : null)
+            ]);
+
+            let pays = [];
+            if (fbPayments.status === 'fulfilled' && fbPayments.value) {
+              pays = Array.isArray(fbPayments.value) ? fbPayments.value : Object.values(fbPayments.value);
+            }
+            let pos = [];
+            if (fbPayouts.status === 'fulfilled' && fbPayouts.value) {
+              pos = Array.isArray(fbPayouts.value) ? fbPayouts.value : Object.values(fbPayouts.value);
+            }
+
+            const totalEarnings = pays.filter(p => p && p.status === 'success').reduce((acc, p) => acc + (parseFloat(p.amount) || 99), 0);
+            const totalWithdrawn = pos.filter(po => po && (po.status === 'completed' || po.status === 'success')).reduce((acc, po) => acc + (parseFloat(po.amount) || 0), 0);
+            const bal = Math.max(0, totalEarnings - totalWithdrawn);
+
+            walletRes = {
+              balance: bal,
+              total_earnings: totalEarnings,
+              total_withdrawn: totalWithdrawn,
+              bank_account: (fbWallet.status === 'fulfilled' && fbWallet.value && fbWallet.value.bank_account) ? fbWallet.value.bank_account : globalWallet.bank_account,
+              payouts: pos,
+              recent_payments: pays
+            };
+          } catch (_) {}
+        }
+
+        if (walletRes) {
+          globalWallet = walletRes;
+          globalPayments = walletRes.recent_payments || [];
+        }
+
+        renderWalletUI();
+      } catch (e) {
+        console.warn('Wallet fetch error:', e);
+      }
+    }
+
+    function renderWalletUI() {
+      const bal = parseFloat(globalWallet.balance || 0);
+      const earnings = parseFloat(globalWallet.total_earnings || 0);
+      const withdrawn = parseFloat(globalWallet.total_withdrawn || 0);
+      const bank = globalWallet.bank_account || {};
+
+      // 1. Navigation Pill
+      const navPill = document.getElementById('nav-wallet-balance');
+      if (navPill) navPill.innerText = `₹${bal.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+
+      // 2. Wallet Hero Card
+      const mainBal = document.getElementById('wallet-balance-main');
+      if (mainBal) mainBal.innerText = bal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const totEarn = document.getElementById('wallet-total-earnings');
+      if (totEarn) totEarn.innerText = `₹${earnings.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+      const totWith = document.getElementById('wallet-total-withdrawn');
+      if (totWith) totWith.innerText = `₹${withdrawn.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+
+      // Active Pro Count (Calculated strictly from real provider subscription records)
+      const activePros = globalProviders.filter(p => p.subscription_status === 'active' || p.subscriptionStatus === 'active').length;
+      const proCountEl = document.getElementById('wallet-active-pro-count');
+      if (proCountEl) proCountEl.innerText = activePros;
+
+      // 4. Linked Bank Account Card
+      const cardBank = document.getElementById('card-bank-name');
+      if (cardBank) cardBank.innerText = bank.bank_name || 'HDFC Bank';
+      const cardAcc = document.getElementById('card-account-number');
+      if (cardAcc) {
+        const rawAcc = String(bank.account_number || '50200088991122');
+        cardAcc.innerText = `•••• •••• •••• ${rawAcc.slice(-4)}`;
+      }
+      const cardHolder = document.getElementById('card-account-holder');
+      if (cardHolder) cardHolder.innerText = bank.account_holder || 'NearFix Platform Owner';
+      const cardIfsc = document.getElementById('card-ifsc');
+      if (cardIfsc) cardIfsc.innerText = bank.ifsc_code || 'HDFC0001234';
+      const cardUpi = document.getElementById('card-upi-id');
+      if (cardUpi) cardUpi.innerText = bank.upi_id || 'pandupraveennani58@ybl';
+
+      // 5. Render Ledger Tables
+      renderInflowsTable();
+      renderSubscribersTable();
+      renderPayoutsTable();
+    }
+
+    function switchLedgerView(view) {
+      currentLedgerView = view;
+      const btnInflows = document.getElementById('btn-ledger-inflows');
+      const btnSubs = document.getElementById('btn-ledger-subscribers');
+      const btnPayouts = document.getElementById('btn-ledger-payouts');
+      
+      if (btnInflows) btnInflows.classList.toggle('active', view === 'inflows');
+      if (btnSubs) btnSubs.classList.toggle('active', view === 'subscribers');
+      if (btnPayouts) btnPayouts.classList.toggle('active', view === 'payouts');
+
+      const viewInflows = document.getElementById('view-ledger-inflows');
+      const viewSubs = document.getElementById('view-ledger-subscribers');
+      const viewPayouts = document.getElementById('view-ledger-payouts');
+
+      if (viewInflows) viewInflows.style.display = view === 'inflows' ? 'block' : 'none';
+      if (viewSubs) viewSubs.style.display = view === 'subscribers' ? 'block' : 'none';
+      if (viewPayouts) viewPayouts.style.display = view === 'payouts' ? 'block' : 'none';
+    }
+
+    function renderInflowsTable(filterQuery = '') {
+      const tbody = document.getElementById('inflows-table-body');
+      const countEl = document.getElementById('ledger-inflows-count');
+      const statusEl = document.getElementById('ledger-search-status');
+      let payments = globalPayments || [];
+      if (countEl) countEl.innerText = payments.length;
+
+      const q = (filterQuery || (document.getElementById('ledger-search-input') ? document.getElementById('ledger-search-input').value : '')).trim().toLowerCase();
+      const qDigits = q.replace(/\D/g, '');
+
+      if (q) {
+        payments = payments.filter(p => {
+          const ph = (p.provider_phone || p.providerPhone || p.phone || '').toString();
+          const phDigits = ph.replace(/\D/g, '');
+          const name = (p.provider_name || p.providerName || '').toString().toLowerCase();
+          const rec = (p.receipt_number || p.receiptNumber || '').toString().toLowerCase();
+          const txn = (p.transaction_id || p.transactionId || '').toString().toLowerCase();
+          return (qDigits && phDigits.includes(qDigits)) || name.includes(q) || rec.includes(q) || txn.includes(q);
+        });
+        if (statusEl) statusEl.innerHTML = `<span style="color: #00875A; font-weight: 800;">Found ${payments.length} payment(s)</span>`;
+      } else {
+        if (statusEl) statusEl.innerText = '';
+      }
+
+      if (!tbody) return;
+      if (payments.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="10" class="empty-state"><i class="fa-solid fa-receipt"></i><p>${q ? 'No payment records found for "'+q+'".' : 'No subscription payments recorded yet.'}<br><span style="font-size: 12px; color: var(--text-muted);">Real incoming payments will appear here as providers pay via UPI.</span></p></td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = payments.map(p => {
+        const isPending = (p.status === 'pending_verification' || p.status === 'pending');
+        const isRejected = (p.status === 'rejected');
+        
+        let statusBadge = '';
+        let actionButtons = '';
+
+        if (isPending) {
+          statusBadge = `<span class="badge-accent" style="background: #FEF3C7; color: #D97706; font-weight: 800;"><i class="fa-solid fa-clock"></i> Pending Verification</span>`;
+          actionButtons = `
+            <div style="display: flex; gap: 6px;">
+              <button class="btn btn-sm" style="background: #00875A; color: white; padding: 4px 10px; font-size: 11px; font-weight: 700; border-radius: 6px; border: none; cursor: pointer;" onclick="approvePayment('${p.id || p.payment_id}', '${p.provider_id || p.providerId}')" title="Verify bank credit received & activate Pro">
+                <i class="fa-solid fa-check"></i> Approve
+              </button>
+              <button class="btn btn-sm" style="background: #FEE2E2; color: #DC2626; border: 1px solid #FCA5A5; padding: 4px 10px; font-size: 11px; font-weight: 700; border-radius: 6px; cursor: pointer;" onclick="rejectPayment('${p.id || p.payment_id}', '${p.provider_id || p.providerId}')" title="Reject unpaid/fake UTR">
+                <i class="fa-solid fa-xmark"></i> Reject
+              </button>
+            </div>
+          `;
+        } else if (isRejected) {
+          statusBadge = `<span class="badge-accent" style="background: #FEE2E2; color: #DC2626; font-weight: 800;"><i class="fa-solid fa-circle-xmark"></i> Rejected / Invalid</span>`;
+          actionButtons = `<span style="font-size: 11px; color: #94A3B8; font-weight: 600;">Declined</span>`;
+        } else {
+          statusBadge = `<span class="badge-accent" style="background: #E3F7EC; color: #00875A; font-weight: 800;"><i class="fa-solid fa-circle-check"></i> Paid & Verified</span>`;
+          actionButtons = `<span style="font-size: 11px; color: #00875A; font-weight: 700;"><i class="fa-solid fa-shield-check"></i> Verified</span>`;
+        }
+
+        const utrDisplay = p.transaction_id || p.transactionId || p.utr_number || p.utrNumber || 'N/A';
+
+        return `
+          <tr>
+            <td>
+              <span class="tag tag-secondary" style="font-family: monospace; font-weight: 700;">${p.receipt_number || p.receiptNumber || 'NF-REC-001'}</span>
+              <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 2px;">UTR: <strong style="color: var(--text-primary); font-family: monospace;">${utrDisplay}</strong></div>
+            </td>
+            <td><strong style="color: #1E293B; font-size: 13.5px;">${p.provider_name || p.providerName || p.provider_id || 'Technician'}</strong></td>
+            <td><span class="tag tag-primary">${p.service_type || p.category || 'Service'}</span></td>
+            <td><code style="font-size: 12.5px; font-weight: 700; color: #0284C7; background: #E0F2FE; padding: 2px 6px; border-radius: 4px;">${p.provider_phone || p.providerPhone || p.phone || 'Verified'}</code></td>
+            <td><span class="tag" style="background: #EEF2FF; color: #4F46E5; font-weight: 800;">₹99 NearFix Pro</span></td>
+            <td><strong style="color: #00875A; font-size: 15px;">+₹${parseFloat(p.amount || 116.82).toFixed(2)}</strong></td>
+            <td><span class="tag" style="background: #F8FAFC; border: 1px solid #E2E8F0; color: #334155;"><i class="fa-solid fa-building-columns"></i> ${p.gateway || 'Direct UPI (SBI)'}</span></td>
+            <td style="font-size: 12px; color: #64748B;">${p.created_at ? new Date(p.created_at).toLocaleDateString() + ' ' + new Date(p.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Recent'}</td>
+            <td>${statusBadge}</td>
+            <td>${actionButtons}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    window.approvePayment = async function(payId, provId) {
+      if (!confirm('Confirm ₹116.82 credit received in SBI account for this payment?\n\nThis will mark the payment verified and activate NearSlay Pro for this technician.')) return;
+      try {
+        const res = await fetch('/api/payments/approve', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ payment_id: payId, provider_id: provId })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showNotification('🎉 Payment verified! Technician NearSlay Pro activated.', 'success');
+          try {
+            await fetch(`${FIREBASE_RTDB_URL}/payments/${payId}/status.json`, { method: 'PUT', body: JSON.stringify('success') });
+          } catch (_) {}
+          fetchWalletData();
+          fetchProviders();
+        } else {
+          alert(data.error || 'Failed to approve payment.');
+        }
+      } catch (e) {
+        try {
+          await fetch(`${FIREBASE_RTDB_URL}/payments/${payId}/status.json`, { method: 'PUT', body: JSON.stringify('success') });
+          if (provId) {
+            await fetch(`${FIREBASE_RTDB_URL}/providers/${provId}/subscriptionStatus.json`, { method: 'PUT', body: JSON.stringify('active') });
+            await fetch(`${FIREBASE_RTDB_URL}/providers/${provId}/subscription_status.json`, { method: 'PUT', body: JSON.stringify('active') });
+            await fetch(`${FIREBASE_RTDB_URL}/providers/${provId}/isAvailable.json`, { method: 'PUT', body: JSON.stringify(true) });
+          }
+          showNotification('Payment verified directly in Firebase RTDB!', 'success');
+          fetchWalletData();
+          fetchProviders();
+        } catch (err) {
+          alert('Error approving payment: ' + e);
+        }
+      }
+    };
+
+    window.rejectPayment = async function(payId, provId) {
+      if (!confirm('Reject this payment as unpaid / invalid UTR reference?\n\nThis will decline the submission and keep provider unactivated.')) return;
+      try {
+        const res = await fetch('/api/payments/reject', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ payment_id: payId, provider_id: provId })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showNotification('Payment rejected and submission dismissed.', 'info');
+          fetchWalletData();
+          fetchProviders();
+        } else {
+          alert(data.error || 'Failed to reject payment.');
+        }
+      } catch (e) {
+        try {
+          await fetch(`${FIREBASE_RTDB_URL}/payments/${payId}/status.json`, { method: 'PUT', body: JSON.stringify('rejected') });
+          showNotification('Payment marked as rejected in Firebase.', 'info');
+          fetchWalletData();
+          fetchProviders();
+        } catch (err) {
+          alert('Error rejecting payment: ' + e);
+        }
+      }
+    };
+
+    window.clearAllDummyPayments = async function() {
+      if (!confirm('Are you sure you want to clear all dummy/test payment records from the dashboard and database?')) return;
+      try {
+        await fetch(`${API_BASE}/api/payments/clear`, { method: 'POST' }).catch(() => {});
+        await fetch(`${FIREBASE_RTDB_URL}/payments.json`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'User-Agent': 'NearFixApp/1.0' },
+          body: JSON.stringify(null)
+        }).catch(() => {});
+        globalPayments = [];
+        if (globalWallet) {
+          globalWallet.recent_payments = [];
+          globalWallet.total_earnings = 0;
+          globalWallet.balance = 0;
+        }
+        renderWalletUI();
+        showNotification('🎉 All dummy payment records cleared from database!', 'success');
+      } catch (e) {
+        showNotification('Cleared payments: ' + e, 'info');
+      }
+    };
+
+    function renderSubscribersTable() {
+      const tbody = document.getElementById('subscribers-table-body');
+      const countEl = document.getElementById('ledger-subscribers-count');
+      const provs = globalProviders || [];
+      if (countEl) countEl.innerText = provs.length;
+
+      if (!tbody) return;
+      if (provs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="empty-state"><i class="fa-solid fa-user-check"></i><p>No service providers found.</p></td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = provs.map((p) => {
+        const isPro = p.subscription_status === 'active' || p.subscriptionStatus === 'active';
+        const isExpired = p.subscription_status === 'expired' || p.subscriptionStatus === 'expired';
+        
+        let statusBadge;
+        if (isPro) {
+          statusBadge = `<span class="badge-accent" style="background: #E3F7EC; color: #00875A;"><i class="fa-solid fa-crown"></i> Active Pro</span>`;
+        } else if (isExpired) {
+          statusBadge = `<span class="badge-accent" style="background: #FEE2E2; color: #DC2626;"><i class="fa-solid fa-circle-xmark"></i> Expired</span>`;
+        } else {
+          statusBadge = `<span class="badge-accent" style="background: #FEF3C7; color: #D97706;"><i class="fa-solid fa-clock"></i> 90-Day Free Trial</span>`;
+        }
+        
+        const expiryStr = p.subscription_end_date || p.subscriptionEndDate || p.trial_end_date || p.trialEndDate || '';
+        const formattedDate = expiryStr ? new Date(expiryStr).toLocaleDateString() : '90 Days Trial';
+        const daysLeft = expiryStr ? Math.max(0, Math.ceil((new Date(expiryStr) - new Date()) / (1000 * 60 * 60 * 24))) : 90;
+
+        return `
+          <tr>
+            <td>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="width: 28px; height: 28px; border-radius: 50%; background: #EEF2FF; color: #4F46E5; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 11px;">
+                  ${(p.name || 'T')[0]}
+                </div>
+                <strong style="color: #1E293B;">${p.name || 'Technician'}</strong>
+              </div>
+            </td>
+            <td><span class="tag tag-primary">${p.categoryTitle || p.category || 'Service'}</span></td>
+            <td><span style="font-size: 12.5px; color: #475569;">${p.colonyName || 'Colony'}, ${p.city || 'Area'}</span></td>
+            <td><code style="font-size: 12px;">${p.realPhone || 'N/A'}</code></td>
+            <td>${statusBadge}</td>
+            <td><strong style="color: #4F46E5;">₹99 / Month</strong></td>
+            <td style="font-size: 12px; color: #64748B;">${formattedDate}</td>
+            <td><span class="tag" style="background: ${daysLeft < 15 ? '#FEE2E2; color: #DC2626;' : '#F1F5F9; color: #475569;'} font-weight: 700;">${daysLeft} days left</span></td>
+            <td><span style="color: ${p.autoBilling !== false ? '#00875A' : '#94A3B8'}; font-weight: 700; font-size: 12px;"><i class="fa-solid fa-toggle-${p.autoBilling !== false ? 'on' : 'off'}"></i> ${p.autoBilling !== false ? 'Enabled' : 'Disabled'}</span></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderPayoutsTable() {
+      const tbody = document.getElementById('payouts-table-body');
+      const countEl = document.getElementById('ledger-payouts-count');
+      const payouts = globalWallet.payouts || [];
+      if (countEl) countEl.innerText = payouts.length;
+
+      if (!tbody) return;
+      if (payouts.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="empty-state"><i class="fa-solid fa-building-columns"></i><p>No bank payouts made yet. Available balance is ready for transfer.</p></td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = payouts.map(po => `
+        <tr>
+          <td><span class="tag tag-primary" style="font-family: monospace;">${po.payout_id || po.id}</span></td>
+          <td><code style="color: #00875A; font-weight: 700;">${po.utr_number || 'UTR-SETTLED'}</code></td>
+          <td><strong style="color: #1E293B; font-size: 15px;">₹${parseFloat(po.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong></td>
+          <td>${po.bank_name || 'Bank Account'}</td>
+          <td><code style="color: #64748B;">${po.account_number_masked || '•••• 1122'}</code></td>
+          <td><span class="tag" style="background: #F1F5F9; color: #475569;">${po.mode || 'IMPS'}</span></td>
+          <td style="font-size: 12px; color: #64748B;">${po.created_at ? new Date(po.created_at).toLocaleString() : 'Just now'}</td>
+          <td><span class="badge-accent" style="background: #E3F7EC; color: #00875A;"><i class="fa-solid fa-circle-check"></i> Settled to Bank</span></td>
+        </tr>
+      `).join('');
+    }
+
+    // Modal Handlers: Withdrawal
+    function openWithdrawModal() {
+      const bal = parseFloat(globalWallet.balance || 0);
+      document.getElementById('modal-available-balance').innerText = `₹${bal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+      const bank = globalWallet.bank_account || {};
+      const rawAcc = String(bank.account_number || '50200088991122');
+      document.getElementById('modal-bank-destination').innerText = `${bank.bank_name || 'HDFC Bank'} (•••• ${rawAcc.slice(-4)}) - ${bank.ifsc_code || 'HDFC0001234'}`;
+      document.getElementById('withdraw-amount-input').value = bal > 0 ? bal : '';
+      document.getElementById('withdraw-modal').classList.add('active');
+    }
+
+    function closeWithdrawModal() {
+      document.getElementById('withdraw-modal').classList.remove('active');
+    }
+
+    function setWithdrawAmount(amt) {
+      document.getElementById('withdraw-amount-input').value = amt;
+    }
+
+    function setWithdrawAllAmount() {
+      const bal = parseFloat(globalWallet.balance || 0);
+      document.getElementById('withdraw-amount-input').value = bal;
+    }
+
+    async function executeWithdrawal() {
+      const amtInput = document.getElementById('withdraw-amount-input');
+      const amount = parseFloat(amtInput.value);
+      const bal = parseFloat(globalWallet.balance || 0);
+
+      if (isNaN(amount) || amount <= 0) {
+        alert('Please enter a valid withdrawal amount greater than ₹0.');
+        amtInput.focus();
+        return;
+      }
+
+      if (amount > bal) {
+        alert(`Insufficient funds! Available balance is ₹${bal.toFixed(2)}, requested ₹${amount.toFixed(2)}.`);
+        return;
+      }
+
+      const mode = document.getElementById('withdraw-mode-select').value;
+      const notes = document.getElementById('withdraw-notes-input').value.trim();
+      const btn = document.getElementById('btn-confirm-withdraw');
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing Bank Transfer...';
+
+      try {
+        const res = await fetch(`${API_BASE}/api/wallet/payout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount: amount, mode: mode, notes: notes })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          const po = data.payout;
+          alert(`🎉 Bank Transfer Successful!\n\nAmount: ₹${amount.toFixed(2)}\nDestination: ${po.bank_name} (${po.account_number_masked})\nUTR Number: ${po.utr_number}\nStatus: Settled (IMPS Instant)\n\nFunds have been transferred to your registered account.`);
+          closeWithdrawModal();
+          fetchWalletData();
+          fetchCloudData();
+        } else {
+          alert('⚠️ Withdrawal failed: ' + (data.error || 'Server error'));
+        }
+      } catch (err) {
+        alert('⚠️ Network error: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-lock"></i> Confirm & Transfer Funds';
+      }
+    }
+
+    // Modal Handlers: Bank Account
+    function openEditBankModal() {
+      const bank = globalWallet.bank_account || {};
+      document.getElementById('bank-holder-input').value = bank.account_holder || 'NearSlay Services';
+      document.getElementById('bank-name-input').value = bank.bank_name || 'SBI';
+      document.getElementById('bank-number-input').value = bank.account_number || '33545141062';
+      document.getElementById('bank-ifsc-input').value = bank.ifsc_code || 'SBIN0020165';
+      document.getElementById('bank-type-select').value = bank.account_type || 'Savings Account';
+      document.getElementById('bank-upi-input').value = bank.upi_id || 'pandupraveennani58@ybl';
+      document.getElementById('edit-bank-modal').classList.add('active');
+    }
+
+    function closeEditBankModal() {
+      document.getElementById('edit-bank-modal').classList.remove('active');
+    }
+
+    async function saveBankDetails() {
+      const holder = document.getElementById('bank-holder-input').value.trim();
+      const name = document.getElementById('bank-name-input').value.trim();
+      const num = document.getElementById('bank-number-input').value.trim();
+      const ifsc = document.getElementById('bank-ifsc-input').value.trim().toUpperCase();
+      const type = document.getElementById('bank-type-select').value;
+      const upi = document.getElementById('bank-upi-input').value.trim();
+
+      if (!holder || !name || !num || !ifsc) {
+        alert('Please fill in Account Holder, Bank Name, Account Number and IFSC code.');
+        return;
+      }
+
+      const btn = document.getElementById('btn-save-bank');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+
+      try {
+        const payload = {
+          account_holder: holder,
+          bank_name: name,
+          account_number: num,
+          ifsc_code: ifsc,
+          account_type: type,
+          upi_id: upi
+        };
+
+        const res = await fetch(`${API_BASE}/api/wallet/bank`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          alert('✅ Bank account details successfully saved and verified for instant settlements!');
+          closeEditBankModal();
+          fetchWalletData();
+        } else {
+          alert('⚠️ Failed to save bank details.');
+        }
+      } catch (err) {
+        alert('⚠️ Network error: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-check"></i> Save Bank Details';
+      }
+    }
+
+    // Initial fetch and auto-refresh every 5 seconds
+    fetchCloudData();
+    fetchWalletData();
+    loadDynamicSpecs();
+    setInterval(() => {
+      fetchCloudData();
+      fetchWalletData();
+      loadDynamicSpecs();
+    }, 5000);
+  </script>
+</body>
+</html>

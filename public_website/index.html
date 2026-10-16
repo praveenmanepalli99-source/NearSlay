@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NearSlay & NearFix - On-Demand Local Home Services & Technician Discovery</title>
+  <meta name="description" content="NearSlay connects residents with verified local service providers: Electricians, Plumbers, Carpenters, AC Technicians, and Appliance Repair Specialists.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #059669;
+      --primary-dark: #047857;
+      --primary-light: #ecfdf5;
+      --secondary: #0052CC;
+      --secondary-light: #eff6ff;
+      --dark: #0f172a;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      line-height: 1.6;
+    }
+
+    /* NAVIGATION */
+    nav {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 16px 24px;
+    }
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo-badge {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+    .logo-icon {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: #fff;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 800;
+    }
+    .brand-name {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--dark);
+      letter-spacing: -0.5px;
+    }
+    .brand-tag {
+      font-size: 11px;
+      color: var(--primary);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      list-style: none;
+    }
+    .nav-links a {
+      text-decoration: none;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover {
+      color: var(--primary);
+    }
+    .nav-cta {
+      background: var(--primary);
+      color: white !important;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-weight: 700 !important;
+      transition: background 0.2s;
+    }
+    .nav-cta:hover {
+      background: var(--primary-dark) !important;
+    }
+
+    /* HERO SECTION */
+    .hero {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 60px 24px 40px;
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 40px;
+      align-items: center;
+    }
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      padding: 6px 14px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-size: 46px;
+      font-weight: 800;
+      line-height: 1.15;
+      color: var(--dark);
+      margin-bottom: 20px;
+      letter-spacing: -1px;
+    }
+    .hero h1 span {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero p {
+      font-size: 18px;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
+    }
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+    .btn-secondary {
+      background: white;
+      color: var(--dark);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover {
+      background: var(--bg);
+    }
+    .hero-card {
+      background: white;
+      border-radius: 24px;
+      padding: 32px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+      border: 1px solid var(--border);
+    }
+    .hero-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .hero-card-title {
+      font-weight: 800;
+      font-size: 18px;
+      color: var(--dark);
+    }
+    .status-live {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--primary);
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--primary);
+      border-radius: 50%;
+      box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.2);
+    }
+    .service-pill-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .service-mini-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--bg);
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+    .service-mini-card i {
+      font-size: 18px;
+      color: var(--primary);
+    }
+    .service-mini-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--dark);
+    }
+    .service-mini-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* SECTIONS */
+    .section-wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 60px 24px;
+    }
+    .section-header {
+      text-align: center;
+      max-width: 700px;
+      margin: 0 auto 50px;
+    }
+    .section-header h2 {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--dark);
+      margin-bottom: 12px;
+    }
+    .section-header p {
+      font-size: 16px;
+      color: var(--text-muted);
+    }
+
+    /* SERVICES GRID */
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+    }
+    .service-card {
+      background: white;
+      border-radius: 20px;
+      padding: 28px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .service-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+    }
+    .service-card-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      background: var(--primary-light);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    .service-card h3 {
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 10px;
+    }
+    .service-card p {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* PRICING & SUBSCRIPTION SECTION */
+    .pricing-box {
+      background: white;
+      border-radius: 24px;
+      border: 2px solid var(--primary);
+      padding: 40px;
+      max-width: 650px;
+      margin: 0 auto;
+      box-shadow: 0 20px 40px rgba(5, 150, 105, 0.08);
+      text-align: center;
+    }
+    .pricing-badge {
+      display: inline-block;
+      background: var(--primary);
+      color: white;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 4px 16px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 16px;
+    }
+    .pricing-price {
+      font-size: 48px;
+      font-weight: 800;
+      color: var(--dark);
+      margin-bottom: 8px;
+    }
+    .pricing-price span {
+      font-size: 18px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .pricing-gst {
+      font-size: 14px;
+      color: var(--primary);
+      font-weight: 600;
+      margin-bottom: 24px;
+    }
+    .pricing-features {
+      list-style: none;
+      text-align: left;
+      margin: 24px 0 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .pricing-features li {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 15px;
+      color: var(--text-main);
+    }
+    .pricing-features i {
+      color: var(--primary);
+      font-size: 18px;
+    }
+    .payment-trust-bar {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .payment-trust-bar i {
+      color: var(--secondary);
+    }
+
+    /* FOOTER */
+    footer {
+      background: #0f172a;
+      color: #94a3b8;
+      padding: 60px 24px 30px;
+      border-top: 1px solid #1e293b;
+    }
+    .footer-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 40px;
+      margin-bottom: 40px;
+    }
+    .footer-col h4 {
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 18px;
+    }
+    .footer-col p {
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+    .footer-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .footer-links a {
+      color: #94a3b8;
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover {
+      color: #10b981;
+    }
+    .footer-bottom {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding-top: 30px;
+      border-top: 1px solid #1e293b;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    @media (max-width: 900px) {
+      .hero {
+        grid-template-columns: 1fr;
+        padding: 40px 20px;
+      }
+      .footer-container {
+        grid-template-columns: 1fr 1fr;
+      }
+      .nav-links {
+        display: none;
+      }
+    }
+    @media (max-width: 600px) {
+      .footer-container {
+        grid-template-columns: 1fr;
+      }
+      .hero h1 {
+        font-size: 34px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVIGATION -->
+  <nav>
+    <div class="nav-container">
+      <a href="index.html" class="logo-badge">
+        <div class="logo-icon">N</div>
+        <div>
+          <div class="brand-name">NearSlay</div>
+          <div class="brand-tag">On-Demand Home Services</div>
+        </div>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#services">Services</a></li>
+        <li><a href="#pricing">Provider Plans</a></li>
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="privacy.html">Privacy Policy</a></li>
+        <li><a href="terms.html">Terms</a></li>
+        <li><a href="refund.html">Refunds</a></li>
+        <li><a href="contact.html" class="nav-cta">Contact Us</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- HERO SECTION -->
+  <section class="hero">
+    <div>
+      <div class="hero-tag">
+        <i class="fa-solid fa-shield-halved"></i>
+        Verified Neighborhood Technicians
+      </div>
+      <h1>Trusted Doorstep Home Services in <span>Your Neighborhood</span></h1>
+      <p>NearSlay &amp; NearFix instantly connect residents with skilled, verified local professionals. From urgent electrical fixes to plumbing and carpentry, get reliable assistance within minutes.</p>
+      <div class="hero-actions">
+        <a href="#pricing" class="btn btn-primary"><i class="fa-solid fa-briefcase"></i> Join as Service Provider</a>
+        <a href="contact.html" class="btn btn-secondary"><i class="fa-solid fa-headset"></i> Customer Support</a>
+      </div>
+    </div>
+
+    <!-- HERO DISPLAY CARD -->
+    <div class="hero-card">
+      <div class="hero-card-header">
+        <div class="hero-card-title">Live Colony Services</div>
+        <div class="status-live"><span class="pulse-dot"></span> Active Now</div>
+      </div>
+      <div class="service-pill-grid">
+        <div class="service-mini-card">
+          <i class="fa-solid fa-bolt"></i>
+          <div>
+            <div class="service-mini-title">Electrician</div>
+            <div class="service-mini-sub">Within 5 km radius</div>
+          </div>
+        </div>
+        <div class="service-mini-card">
+          <i class="fa-solid fa-wrench"></i>
+          <div>
+            <div class="service-mini-title">Plumber</div>
+            <div class="service-mini-sub">Instant direct dial</div>
+          </div>
+        </div>
+        <div class="service-mini-card">
+          <i class="fa-solid fa-hammer"></i>
+          <div>
+            <div class="service-mini-title">Carpenter</div>
+            <div class="service-mini-sub">Home fittings</div>
+          </div>
+        </div>
+        <div class="service-mini-card">
+          <i class="fa-solid fa-snowflake"></i>
+          <div>
+            <div class="service-mini-title">AC &amp; Appliance</div>
+            <div class="service-mini-sub">Gas refill &amp; repair</div>
+          </div>
+        </div>
+      </div>
+      <div style="background: var(--primary-light); padding: 14px; border-radius: 12px; font-size: 13px; color: var(--primary-dark); font-weight: 600;">
+        <i class="fa-solid fa-check-circle"></i> Zero commission taken from service fees. Technicians keep 100% of their earnings.
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES SECTION -->
+  <section id="services" class="section-wrap">
+    <div class="section-header">
+      <h2>Complete Range of Home &amp; Facility Services</h2>
+      <p>Discover expert technicians and doorstep services available across residential colonies and apartments.</p>
+    </div>
+
+    <div class="services-grid">
+      <div class="service-card">
+        <div class="service-card-icon"><i class="fa-solid fa-bolt"></i></div>
+        <h3>Electrical Works</h3>
+        <p>Short circuit diagnosis, switchboard replacements, inverter wiring, ceiling fan fittings, and complete home electrical maintenance.</p>
+      </div>
+
+      <div class="service-card">
+        <div class="service-card-icon"><i class="fa-solid fa-faucet-drip"></i></div>
+        <h3>Plumbing &amp; Sanitary</h3>
+        <p>Pipeline leak repairs, bathroom sanitary fittings, tap repairs, water tank cleaning, and booster pump servicing.</p>
+      </div>
+
+      <div class="service-card">
+        <div class="service-card-icon"><i class="fa-solid fa-snowflake"></i></div>
+        <h3>AC &amp; Appliance Repair</h3>
+        <p>Split &amp; window AC servicing, gas charging, washing machine, microwave, and refrigerator diagnostics by certified specialists.</p>
+      </div>
+
+      <div class="service-card">
+        <div class="service-card-icon"><i class="fa-solid fa-hammer"></i></div>
+        <h3>Carpentry &amp; Furniture</h3>
+        <p>Door lock replacements, hinge repairs, custom wardrobe fittings, kitchen cabinet adjustments, and furniture assembly.</p>
+      </div>
+
+      <div class="service-card">
+        <div class="service-card-icon"><i class="fa-solid fa-paint-roller"></i></div>
+        <h3>Painting &amp; Waterproofing</h3>
+        <p>Interior and exterior wall painting, waterproof wall coatings, dampness treatment, and decorative textures.</p>
+      </div>
+
+      <div class="service-card">
+        <div class="service-card-icon"><i class="fa-solid fa-broom"></i></div>
+        <h3>Home Deep Cleaning</h3>
+        <p>Intensive kitchen degreasing, bathroom descaling, sofa shampooing, and post-renovation home sanitization.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING SECTION -->
+  <section id="pricing" class="section-wrap" style="background: white; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+    <div class="section-header">
+      <h2>Transparent, Flat-Fee Pricing for Service Providers</h2>
+      <p>No commissions. No lead fees. Just one simple monthly subscription to connect with local customers.</p>
+    </div>
+
+    <div class="pricing-box">
+      <div class="pricing-badge">NearSlay Pro Technician Plan</div>
+      <div class="pricing-price">&#8377;99 <span>/ month</span></div>
+      <div class="pricing-gst">+ 18% GST (&#8377;17.82) &bull; Total Payable: &#8377;116.82 / month</div>
+
+      <ul class="pricing-features">
+        <li><i class="fa-solid fa-circle-check"></i> Featured listing in your colony &amp; nearby 10 km radius</li>
+        <li><i class="fa-solid fa-circle-check"></i> Unlimited direct incoming calls &amp; WhatsApp inquiries from residents</li>
+        <li><i class="fa-solid fa-circle-check"></i> Zero commission on jobs &mdash; keep 100% of your earnings</li>
+        <li><i class="fa-solid fa-circle-check"></i> Verified Provider badge on your profile</li>
+        <li><i class="fa-solid fa-circle-check"></i> 14-day free trial on initial registration</li>
+      </ul>
+
+      <a href="contact.html" class="btn btn-primary" style="width: 100%; justify-content: center;">
+        <i class="fa-solid fa-credit-card"></i> Subscribe via Razorpay Secure Gateway
+      </a>
+
+      <div class="payment-trust-bar">
+        <span><i class="fa-solid fa-shield-halved"></i> 100% Secure Razorpay Checkout</span>
+        <span>&bull;</span>
+        <span>UPI / Cards / NetBanking</span>
+        <span>&bull;</span>
+        <span>Instant Activation</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="how-it-works" class="section-wrap">
+    <div class="section-header">
+      <h2>How NearSlay Works</h2>
+      <p>A seamless, direct connection platform between neighborhood residents and skilled tradespeople.</p>
+    </div>
+
+    <div class="services-grid">
+      <div class="service-card">
+        <div class="service-card-icon"><i class="fa-solid fa-location-dot"></i></div>
+        <h3>1. Select Your Neighborhood</h3>
+        <p>Residents open the NearSlay app and auto-detect their colony or select their residential locality.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-card-icon"><i class="fa-solid fa-user-check"></i></div>
+        <h3>2. Browse Verified Pros</h3>
+        <p>View technician profiles, verified phone numbers, base hourly rates, and customer ratings.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-card-icon"><i class="fa-solid fa-phone-volume"></i></div>
+        <h3>3. Direct Calling &amp; Booking</h3>
+        <p>Connect instantly with the technician via direct phone call or WhatsApp. Settle job payment directly with the provider.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER WITH ALL MANDATORY RAZORPAY COMPLIANCE LINKS -->
+  <footer>
+    <div class="footer-container">
+      <div class="footer-col">
+        <div class="logo-badge" style="margin-bottom: 16px;">
+          <div class="logo-icon">N</div>
+          <div>
+            <div class="brand-name" style="color: white;">NearSlay</div>
+            <div class="brand-tag">Technologies</div>
+          </div>
+        </div>
+        <p>NearSlay &amp; NearFix is an on-demand hyperlocal home services platform committed to empowering local technicians and simplifying home maintenance for residents.</p>
+        <p style="font-size: 13px; color: #64748b;">
+          <strong>Operating Address:</strong> NearSlay Technologies, Hyderabad, Telangana &bull; Andhra Pradesh, India.<br>
+          <strong>Official Support:</strong> <a href="mailto:nearfix99@gmail.com" style="color: #10b981;">nearfix99@gmail.com</a>
+        </p>
+      </div>
+
+      <div class="footer-col">
+        <h4>Legal &amp; Compliance</h4>
+        <ul class="footer-links">
+          <li><a href="terms.html">Terms &amp; Conditions</a></li>
+          <li><a href="privacy.html">Privacy Policy</a></li>
+          <li><a href="refund.html">Refund &amp; Cancellation Policy</a></li>
+          <li><a href="shipping.html">Shipping &amp; Delivery Policy</a></li>
+          <li><a href="safety.html">Safety Guidelines</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Company &amp; Support</h4>
+        <ul class="footer-links">
+          <li><a href="contact.html">Contact Us</a></li>
+          <li><a href="contact.html#grievance">Grievance Redressal</a></li>
+          <li><a href="#services">Our Services</a></li>
+          <li><a href="#pricing">Technician Pricing</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Payment &amp; Trust</h4>
+        <p style="font-size: 13px;">Online payments for subscriptions are securely processed by <strong>Razorpay</strong> with 256-bit SSL encryption.</p>
+        <div style="display: flex; gap: 8px; font-size: 24px; color: #cbd5e1; margin-top: 12px;">
+          <i class="fa-brands fa-cc-visa"></i>
+          <i class="fa-brands fa-cc-mastercard"></i>
+          <i class="fa-solid fa-building-columns"></i>
+          <i class="fa-solid fa-mobile-screen-button"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div>&copy; 2026 NearSlay Technologies / NearFix. All rights reserved.</div>
+      <div>
+        <a href="privacy.html" style="color: #94a3b8; text-decoration: none; margin-right: 16px;">Privacy</a>
+        <a href="terms.html" style="color: #94a3b8; text-decoration: none; margin-right: 16px;">Terms</a>
+        <a href="refund.html" style="color: #94a3b8; text-decoration: none;">Refund Policy</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

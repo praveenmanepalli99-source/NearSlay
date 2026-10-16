@@ -1,0 +1,120 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'remote_config_service.dart';
+
+/// AdMob Native Ads Manager with Firebase Remote Config Integration
+class AdService {
+  AdService._();
+  static final AdService instance = AdService._();
+
+  // Official Google AdMob Test Ad Unit IDs
+  static const String testNativeAdUnitIdAndroid = 'ca-app-pub-3940256099942544/2247696110';
+  static const String testNativeAdUnitIdIos = 'ca-app-pub-3940256099942544/3986624511';
+
+  bool _isInitialized = false;
+
+  // --- Getters ---
+  bool get isInitialized => _isInitialized;
+
+  /// Check if the current platform supports native Google Mobile Ads
+  bool get isMobilePlatform {
+    if (kIsWeb) return false;
+    return defaultTargetPlatform == TargetPlatform.android ||
+        defaultTargetPlatform == TargetPlatform.iOS;
+  }
+
+  /// Get the active Native Ad Unit ID (Android/iOS or Remote Config override)
+  String get nativeAdUnitId {
+    final remoteUnitId = RemoteConfigService.instance.nativeAdUnitId;
+    if (remoteUnitId.isNotEmpty && remoteUnitId != RemoteConfigService.defaultNativeAdUnitIdAndroid) {
+      return remoteUnitId;
+    }
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
+      return testNativeAdUnitIdIos;
+    }
+    return testNativeAdUnitIdAndroid;
+  }
+
+  /// 1. Initialize Mobile Ads SDK safely
+  Future<void> init() async {
+    if (_isInitialized) return;
+
+    try {
+      if (isMobilePlatform) {
+        await MobileAds.instance.initialize();
+        _isInitialized = true;
+        debugPrint('[AdService] Google Mobile Ads SDK successfully initialized for Native Ads');
+      } else {
+        _isInitialized = true;
+        debugPrint('[AdService] Non-mobile platform detected. Running with NearSlay Native Ad Fallback.');
+      }
+    } catch (e) {
+      debugPrint('[AdService] Initialization error: $e');
+    }
+  }
+
+  /// 2. Helper to create and load a styled NativeAd instance
+  NativeAd? createNativeAd({
+    required VoidCallback onAdLoaded,
+    required VoidCallback onAdFailedToLoad,
+  }) {
+    if (!RemoteConfigService.instance.showAds || !isMobilePlatform) {
+      return null;
+    }
+
+    final adUnitId = nativeAdUnitId;
+    debugPrint('[AdService] Creating NativeAd with Unit ID: $adUnitId');
+
+    final nativeAd = NativeAd(
+      adUnitId: adUnitId,
+      request: const AdRequest(),
+      listener: NativeAdListener(
+        onAdLoaded: (Ad ad) {
+          debugPrint('[AdService] NativeAd loaded successfully (${ad.adUnitId})');
+          onAdLoaded();
+        },
+        onAdFailedToLoad: (Ad ad, LoadAdError error) {
+          debugPrint('[AdService] NativeAd failed to load: ${error.message} (code: ${error.code})');
+          ad.dispose();
+          onAdFailedToLoad();
+        },
+        onAdClicked: (Ad ad) {
+          debugPrint('[AdService] NativeAd clicked');
+        },
+        onAdImpression: (Ad ad) {
+          debugPrint('[AdService] NativeAd impression recorded');
+        },
+      ),
+      nativeTemplateStyle: NativeTemplateStyle(
+        templateType: TemplateType.small,
+        mainBackgroundColor: const Color(0xFF1E293B),
+        cornerRadius: 16.0,
+        callToActionTextStyle: NativeTemplateTextStyle(
+          textColor: Colors.white,
+          backgroundColor: const Color(0xFF2563EB),
+          style: NativeTemplateFontStyle.bold,
+          size: 13.0,
+        ),
+        primaryTextStyle: NativeTemplateTextStyle(
+          textColor: Colors.white,
+          style: NativeTemplateFontStyle.bold,
+          size: 14.0,
+        ),
+        secondaryTextStyle: NativeTemplateTextStyle(
+          textColor: const Color(0xFF94A3B8),
+          style: NativeTemplateFontStyle.normal,
+          size: 12.0,
+        ),
+        tertiaryTextStyle: NativeTemplateTextStyle(
+          textColor: const Color(0xFF64748B),
+          style: NativeTemplateFontStyle.normal,
+          size: 11.0,
+        ),
+      ),
+    );
+
+    nativeAd.load();
+    return nativeAd;
+  }
+}

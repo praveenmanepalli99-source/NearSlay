@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "660976809125",
+    "project_id": "nearslay",
+    "storage_bucket": "nearslay.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:660976809125:android:570bb9d21d5b99328d094c",
+        "android_client_info": {
+          "package_name": "com.nearfix.app.nearfix"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBPkvHZceFr6JaDortv6K8FNtOOHaI77N0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

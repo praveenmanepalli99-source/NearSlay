@@ -1,0 +1,9 @@
+# Production Keystore signing configuration for Google Play Store release
+# Place this file as android/key.properties (never commit your real passwords to public git)
+# Generate a new keystore with:
+# keytool -genkey -v -keystore android/app/upload-keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+
+storePassword=your_store_password
+keyPassword=your_key_password
+keyAlias=upload
+storeFile=upload-keystore.jks

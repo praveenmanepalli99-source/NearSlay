@@ -288,7 +288,49 @@ class SmsService {
       nativeError = e.toString();
     }
 
-    // 2. Secondary Fallback: 2Factor.in (Only if API has active balance)
+    // 2. High-Priority Direct Firebase Identity Toolkit REST API Fallback
+    try {
+      final effectiveKey = apiKey.isNotEmpty ? apiKey : defaultFirebaseApiKey;
+      final url = Uri.parse(
+          'https://identitytoolkit.googleapis.com/v1/accounts:sendVerificationCode?key=$effectiveKey');
+
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'phoneNumber': formattedPhone,
+        }),
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final session = data['sessionInfo']?.toString();
+        lastFirebaseSessionInfo = session;
+        if (session != null) {
+          SharedPreferences.getInstance().then((prefs) {
+            prefs.setString('nearfix_last_firebase_session', session);
+          }).catchError((_) {});
+        }
+        return SmsResult(
+          success: true,
+          isSimulated: false,
+          message: 'SMS verification code sent from Firebase',
+          sessionId: session,
+        );
+      } else {
+        try {
+          final errData = jsonDecode(response.body);
+          final errMsg = errData['error']?['message']?.toString();
+          if (errMsg != null && errMsg.isNotEmpty) {
+            nativeError = errMsg;
+          }
+        } catch (_) {}
+      }
+    } catch (e) {
+      if (nativeError.isEmpty) nativeError = e.toString();
+    }
+
+    // 3. Secondary Fallback: 2Factor.in (Only if API has active balance)
     try {
       final twoFactorResult = await _sendVia2Factor(phone, otp, default2FactorKey);
       if (twoFactorResult.success) {

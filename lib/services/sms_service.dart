@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SmsResult {
   final bool success;
@@ -243,7 +244,23 @@ class SmsService {
     return await _dispatchStandardSms(cleanPhone, otp);
   }
 
-  /// Google Firebase Phone Authentication (Primary: Carrier SMS, Fallback: 2Factor Voice/SMS)
+  /// Launch WhatsApp with prefilled verification code
+  static Future<bool> launchWhatsAppOtp(String phone, String otp) async {
+    final cleanPhone = clean10DigitPhone(phone);
+    final message = Uri.encodeComponent(
+      'NearSlay Verification Code: $otp\n\nUse this 6-digit code to log in to your NearSlay account. Valid for 10 minutes.',
+    );
+    final uri = Uri.parse('https://wa.me/91$cleanPhone?text=$message');
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+        return true;
+      }
+    } catch (_) {}
+    return false;
+  }
+
+  /// Google Firebase Phone Authentication (Primary: Native Carrier SMS, Fallbacks: Fast2SMS, 2Factor, Identity Toolkit)
   static Future<SmsResult> _sendViaFirebaseAuth(
     String phone,
     String otp,
@@ -282,13 +299,39 @@ class SmsService {
           nativeError = nativeRes['message']?.toString() ?? 'Firebase SMS verification failed';
         }
       } else {
-        nativeError = 'Firebase verification timed out. Please check network connectivity and try again.';
+        nativeError = 'Firebase Play Services verification timed out.';
       }
     } catch (e) {
       nativeError = e.toString();
     }
 
-    // 2. High-Priority Direct Firebase Identity Toolkit REST API Fallback
+    // 2. Fallback to Indian Telecom SMS Gateways (Fast2SMS / 2Factor)
+    try {
+      final key = activeApiKey.isNotEmpty ? activeApiKey : defaultFast2SmsKey;
+      final fast2SmsResult = await _sendViaFast2Sms(phone, otp, key);
+      if (fast2SmsResult.success) {
+        return SmsResult(
+          success: true,
+          isSimulated: false,
+          message: 'SMS delivered to +91 $phone via Indian SMS gateway',
+          sessionId: fast2SmsResult.sessionId,
+        );
+      }
+    } catch (_) {}
+
+    try {
+      final twoFactorResult = await _sendVia2Factor(phone, otp, default2FactorKey);
+      if (twoFactorResult.success) {
+        return SmsResult(
+          success: true,
+          isSimulated: false,
+          message: 'OTP code sent to Registered Mobile number',
+          sessionId: twoFactorResult.sessionId,
+        );
+      }
+    } catch (_) {}
+
+    // 3. Fallback: Firebase Identity Toolkit REST API (Acquires session token for web/testing)
     try {
       final effectiveKey = apiKey.isNotEmpty ? apiKey : defaultFirebaseApiKey;
       final url = Uri.parse(
@@ -300,7 +343,7 @@ class SmsService {
         body: jsonEncode({
           'phoneNumber': formattedPhone,
         }),
-      ).timeout(const Duration(seconds: 10));
+      ).timeout(const Duration(seconds: 8));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -311,12 +354,15 @@ class SmsService {
             prefs.setString('nearfix_last_firebase_session', session);
           }).catchError((_) {});
         }
-        return SmsResult(
-          success: true,
-          isSimulated: false,
-          message: 'SMS verification code sent from Firebase',
-          sessionId: session,
-        );
+        // If native had no explicit error (e.g. running on web / test simulator)
+        if (nativeError.isEmpty) {
+          return SmsResult(
+            success: true,
+            isSimulated: false,
+            message: 'SMS verification code dispatched from Firebase',
+            sessionId: session,
+          );
+        }
       } else {
         try {
           final errData = jsonDecode(response.body);
@@ -330,38 +376,15 @@ class SmsService {
       if (nativeError.isEmpty) nativeError = e.toString();
     }
 
-    // 3. Secondary Fallback: 2Factor.in (Only if API has active balance)
-    try {
-      final twoFactorResult = await _sendVia2Factor(phone, otp, default2FactorKey);
-      if (twoFactorResult.success) {
-        return SmsResult(
-          success: true,
-          isSimulated: false,
-          message: 'OTP code sent to Registered Mobile number',
-          sessionId: twoFactorResult.sessionId,
-        );
-      }
-    } catch (_) {}
-
-    // 3. Fallback to Fast2SMS (Only if API has active balance)
-    try {
-      final fast2SmsResult = await _sendViaFast2Sms(phone, otp, defaultFast2SmsKey);
-      if (fast2SmsResult.success) {
-        return SmsResult(
-          success: true,
-          isSimulated: false,
-          message: 'SMS delivered to +91 $phone',
-          sessionId: fast2SmsResult.sessionId,
-        );
-      }
-    } catch (_) {}
-
     return SmsResult(
       success: false,
       isSimulated: false,
-      message: nativeError.isNotEmpty ? nativeError : 'Unable to dispatch SMS to +91 $phone',
+      message: nativeError.isNotEmpty
+          ? 'Firebase Error: $nativeError'
+          : 'Unable to dispatch SMS to +91 $phone. Check Firebase SHA-256 and SMS Region Policy.',
     );
   }
+
 
   /// 2Factor.in SMS / Voice OTP Gateway (Standard Indian Telecom DLT Approved API)
   static Future<SmsResult> _sendVia2Factor(String phone, String otp, String apiKey) async {

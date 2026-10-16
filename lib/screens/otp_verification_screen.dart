@@ -269,20 +269,30 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                       ),
                       const SizedBox(height: 20),
 
-                      // Resend Timer
+                      // Resend Timer & Multi-Channel Options
                       Wrap(
                         alignment: WrapAlignment.center,
                         crossAxisAlignment: WrapCrossAlignment.center,
-                        spacing: 4,
+                        spacing: 8,
+                        runSpacing: 8,
                         children: [
                           Text(
                             _secondsRemaining > 0
                                 ? 'Resend OTP in ${_secondsRemaining}s'
-                                : 'Didn\'t receive code?',
+                                : 'Didn\'t receive SMS?',
                             style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
                           ),
-                          if (_secondsRemaining == 0)
-                            TextButton(
+                          if (_secondsRemaining == 0) ...[
+                            TextButton.icon(
+                              icon: const Icon(Icons.refresh_rounded, size: 16, color: AppColors.primary),
+                              label: const Text(
+                                'Resend SMS',
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.primary,
+                                ),
+                              ),
                               onPressed: () async {
                                 final state = Provider.of<NearFixState>(context, listen: false);
                                 final newOtp = state.requestOtp(widget.phoneNumber);
@@ -309,15 +319,38 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                                   ),
                                 );
                               },
-                              child: const Text(
-                                'Resend OTP',
+                            ),
+                            OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFF25D366),
+                                side: const BorderSide(color: Color(0xFF25D366), width: 1.2),
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              ),
+                              icon: const Icon(Icons.chat_bubble_outline_rounded, size: 15, color: Color(0xFF25D366)),
+                              label: const Text(
+                                'Get via WhatsApp',
                                 style: TextStyle(
-                                  fontSize: 12.5,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.primary,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF1E7E34),
                                 ),
                               ),
+                              onPressed: () async {
+                                final launched = await SmsService.launchWhatsAppOtp(widget.phoneNumber, _activeOtp);
+                                if (!mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(launched
+                                        ? 'Opening WhatsApp with your verification code...'
+                                        : 'Unable to open WhatsApp on this device.'),
+                                    backgroundColor: launched ? const Color(0xFF1E7E34) : AppColors.errorRed,
+                                    duration: const Duration(seconds: 3),
+                                  ),
+                                );
+                              },
                             ),
+                          ],
                         ],
                       ),
                       const SizedBox(height: 24),

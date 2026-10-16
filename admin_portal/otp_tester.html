@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NearSlay / NearFix — Live OTP Dispatch & Verification Diagnostic Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Firebase JS SDK (v10) for Web Client Testing -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: rgba(17, 24, 39, 0.85);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --success: #10b981;
+      --error: #ef4444;
+      --warning: #f59e0b;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --term-bg: #030712;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.1) 0px, transparent 50%);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, sans-serif;
+      min-height: 100vh;
+      padding: 24px 16px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--card-border);
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .logo-badge {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 900;
+      box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
+    }
+    .title h1 {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+    }
+    .title p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .badge-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .badge {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .badge.blaze {
+      background: rgba(245, 158, 11, 0.15);
+      border-color: rgba(245, 158, 11, 0.3);
+      color: #fbbf24;
+    }
+    .badge.active {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.3);
+      color: #34d399;
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .card-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #e5e7eb;
+    }
+    .input-row {
+      display: flex;
+      gap: 8px;
+    }
+    .prefix-box {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--card-border);
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 15px;
+      color: #fff;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      outline: none;
+      transition: all 0.2s;
+    }
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+
+    .quick-chips {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .chip {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--card-border);
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .chip:hover {
+      background: rgba(59, 130, 246, 0.2);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 13px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+      width: 100%;
+    }
+    .btn:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .btn.secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      border: 1px solid var(--card-border);
+    }
+    .btn.secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+    .btn.success {
+      background: var(--success);
+    }
+    .btn.success:hover {
+      background: #059669;
+    }
+
+    /* Terminal Styles */
+    .terminal-card {
+      display: flex;
+      flex-direction: column;
+    }
+    .term-header {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 12px 18px;
+      border-radius: 14px 14px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid var(--card-border);
+      border-bottom: none;
+    }
+    .term-dots {
+      display: flex;
+      gap: 6px;
+    }
+    .t-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .t-red { background: #ef4444; }
+    .t-yellow { background: #f59e0b; }
+    .t-green { background: #10b981; }
+    .term-title {
+      font-size: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-muted);
+    }
+    .term-body {
+      background: var(--term-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 0 0 14px 14px;
+      padding: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      min-height: 380px;
+      max-height: 480px;
+      overflow-y: auto;
+      line-height: 1.6;
+    }
+    .log-line {
+      margin-bottom: 6px;
+      display: flex;
+      gap: 8px;
+      word-break: break-all;
+    }
+    .log-time { color: #6b7280; font-size: 11px; flex-shrink: 0; }
+    .log-tag {
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 10.5px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .tag-INFO { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+    .tag-SUCCESS { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+    .tag-ERROR { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+    .tag-WARN { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+    .log-msg { color: #e5e7eb; }
+
+    .recaptcha-box {
+      margin: 16px 0;
+      display: flex;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px dashed var(--card-border);
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    .status-banner {
+      padding: 14px 16px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      font-size: 13.5px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .status-banner.success {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34d399;
+    }
+    .status-banner.error {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+    }
+    .status-banner.warning {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #fbbf24;
+    }
+
+    .collapsible {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-top: 14px;
+    }
+    .collapsible-header {
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      color: #9ca3af;
+    }
+    .collapsible-content {
+      margin-top: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      white-space: pre-wrap;
+      color: #d1d5db;
+      display: none;
+    }
+    .collapsible-content.show { display: block; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="logo-badge">N</div>
+        <div class="title">
+          <h1>NearSlay OTP Diagnostic & Verification Suite</h1>
+          <p>Real-Time Google Firebase Phone Auth & SMS Gateway Live Log Analyzer</p>
+        </div>
+      </div>
+      <div class="badge-group">
+        <div class="badge"><span class="dot"></span> Project: nearslay</div>
+        <div class="badge blaze"><span class="dot"></span> Firebase Blaze Plan</div>
+        <div class="badge active"><span class="dot"></span> Diagnostic Server: Port 5000</div>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- Left Column: Dispatch & Verify Panels -->
+      <div style="display: flex; flex-direction: column; gap: 24px;">
+        
+        <!-- Step 1: Dispatch Test -->
+        <div class="card">
+          <div class="card-title">
+            <span>🚀</span> Step 1: Dispatch SMS Verification Code
+          </div>
+          <div class="card-desc">
+            Directly test Google Firebase Identity Toolkit API for carrier SMS dispatch to Indian numbers.
+          </div>
+
+          <div class="form-group">
+            <label for="phoneNumber">Recipient Mobile Number</label>
+            <div class="input-row">
+              <div class="prefix-box">+91 (India)</div>
+              <input type="text" id="phoneNumber" value="9912525829" placeholder="Enter 10-digit number" maxlength="10">
+            </div>
+            <div class="quick-chips">
+              <span class="chip" onclick="setPhone('9912525829')">9912525829 (Your Number)</span>
+              <span class="chip" onclick="setPhone('9491563313')">9491563313 (Signed In Today)</span>
+              <span class="chip" onclick="setPhone('9640802522')">9640802522 (Signed In Today)</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Dispatch Mode</label>
+            <div style="display: flex; gap: 10px;">
+              <label style="display: flex; align-items: center; gap: 6px; font-weight: 500; font-size: 13px; cursor: pointer;">
+                <input type="radio" name="dispatchMode" value="rest" checked onchange="toggleMode()">
+                Firebase Cloud REST API (Direct)
+              </label>
+              <label style="display: flex; align-items: center; gap: 6px; font-weight: 500; font-size: 13px; cursor: pointer;">
+                <input type="radio" name="dispatchMode" value="sdk" onchange="toggleMode()">
+                Firebase Web SDK (Visible reCAPTCHA)
+              </label>
+            </div>
+          </div>
+
+          <!-- Web SDK reCAPTCHA Container -->
+          <div id="recaptchaContainer" class="recaptcha-box" style="display: none;">
+            <div id="recaptcha-widget"></div>
+          </div>
+
+          <button id="sendBtn" class="btn" onclick="triggerOtpDispatch()">
+            <span>📲</span> Send OTP Verification Code
+          </button>
+        </div>
+
+        <!-- Step 2: Verification Test -->
+        <div class="card">
+          <div class="card-title">
+            <span>🔐</span> Step 2: Verify Received OTP Code
+          </div>
+          <div class="card-desc">
+            Submit the 6-digit code received on mobile or test whitelist code to verify with Google Firebase.
+          </div>
+
+          <div class="form-group">
+            <label for="sessionInfoInput">Active Firebase Session Token</label>
+            <input type="text" id="sessionInfoInput" placeholder="Auto-populated after dispatch" readonly style="font-size: 12px; color: var(--text-muted);">
+          </div>
+
+          <div class="form-group">
+            <label for="otpCodeInput">6-Digit Verification Code</label>
+            <input type="text" id="otpCodeInput" placeholder="e.g. 123456 or 112233" maxlength="6">
+            <div class="quick-chips">
+              <span class="chip" onclick="setOtp('112233')">112233 (Test Whitelist)</span>
+              <span class="chip" onclick="setOtp('123456')">123456 (Standard Test Code)</span>
+            </div>
+          </div>
+
+          <button id="verifyBtn" class="btn success" onclick="triggerOtpVerify()">
+            <span>✅</span> Verify Code with Firebase
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Live Terminal Logs & Diagnostic Insight -->
+      <div class="terminal-card">
+        <div class="term-header">
+          <div class="term-dots">
+            <div class="t-dot t-red"></div>
+            <div class="t-dot t-yellow"></div>
+            <div class="t-dot t-green"></div>
+          </div>
+          <div class="term-title">console.log — nearfix-otp-diagnostic</div>
+          <button onclick="clearLogs()" style="background: none; border: none; color: #9ca3af; font-size: 11px; cursor: pointer; text-decoration: underline;">Clear</button>
+        </div>
+        <div id="terminal" class="term-body">
+          <div class="log-line">
+            <span class="log-time">00:00:00</span>
+            <span class="log-tag tag-INFO">INIT</span>
+            <span class="log-msg">Diagnostic system ready. Select a phone number and click 'Send OTP Verification Code'.</span>
+          </div>
+        </div>
+
+        <!-- Diagnostic Summary Box -->
+        <div id="diagnosticCard" class="card" style="margin-top: 18px; display: none;">
+          <div id="statusBanner" class="status-banner"></div>
+          <div id="diagnosticExplanation" style="font-size: 13px; line-height: 1.6; color: #d1d5db;"></div>
+          
+          <div class="collapsible">
+            <div class="collapsible-header" onclick="toggleCollapsible('rawJson')">
+              <span>View Raw Server Response JSON</span>
+              <span>▼</span>
+            </div>
+            <div id="rawJson" class="collapsible-content"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const FIREBASE_API_KEY = "AIzaSyBPkvHZceFr6JaDortv6K8FNtOOHaI77N0";
+    let activeSessionInfo = "";
+    let webConfirmationResult = null;
+
+    // Initialize Web SDK
+    const firebaseConfig = {
+      apiKey: FIREBASE_API_KEY,
+      authDomain: "nearslay.firebaseapp.com",
+      projectId: "nearslay",
+      storageBucket: "nearslay.appspot.com"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    function setPhone(num) {
+      document.getElementById('phoneNumber').value = num;
+      log(`Selected quick-fill phone: +91 ${num}`, 'INFO');
+    }
+
+    function setOtp(code) {
+      document.getElementById('otpCodeInput').value = code;
+    }
+
+    function toggleMode() {
+      const mode = document.querySelector('input[name="dispatchMode"]:checked').value;
+      const recaptchaBox = document.getElementById('recaptchaContainer');
+      if (mode === 'sdk') {
+        recaptchaBox.style.display = 'flex';
+        initWebRecaptcha();
+      } else {
+        recaptchaBox.style.display = 'none';
+      }
+    }
+
+    let recaptchaVerifier = null;
+    function initWebRecaptcha() {
+      if (!recaptchaVerifier) {
+        recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-widget', {
+          'size': 'normal',
+          'callback': (response) => {
+            log(`Google reCAPTCHA completed successfully. Token: ${response.substring(0, 20)}...`, 'SUCCESS');
+          },
+          'expired-callback': () => {
+            log('reCAPTCHA expired. Please re-verify.', 'WARN');
+          }
+        });
+        recaptchaVerifier.render();
+      }
+    }
+
+    function log(message, level = 'INFO') {
+      const term = document.getElementById('terminal');
+      const time = new Date().toTimeString().split(' ')[0];
+      const div = document.createElement('div');
+      div.className = 'log-line';
+      div.innerHTML = `
+        <span class="log-time">${time}</span>
+        <span class="log-tag tag-${level}">${level}</span>
+        <span class="log-msg">${escapeHtml(message)}</span>
+      `;
+      term.appendChild(div);
+      term.scrollTop = term.scrollHeight;
+    }
+
+    function clearLogs() {
+      document.getElementById('terminal').innerHTML = '';
+      log('Console cleared.', 'INFO');
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.innerText = text;
+      return div.innerHTML;
+    }
+
+    async function triggerOtpDispatch() {
+      const phoneInput = document.getElementById('phoneNumber').value.trim();
+      const cleanDigits = phoneInput.replace(/\D/g, '');
+      if (cleanDigits.length < 10) {
+        log('Error: Please enter a valid 10-digit mobile number.', 'ERROR');
+        return;
+      }
+      const fullPhone = `+91${cleanDigits.slice(-10)}`;
+      const mode = document.querySelector('input[name="dispatchMode"]:checked').value;
+      const sendBtn = document.getElementById('sendBtn');
+      sendBtn.disabled = true;
+      sendBtn.innerHTML = '<span>⏳</span> Dispatching via Google Cloud...';
+
+      log(`[STEP 1] Starting OTP dispatch for: ${fullPhone}`, 'INFO');
+
+      if (mode === 'rest') {
+        try {
+          log(`Target API: https://identitytoolkit.googleapis.com/v1/accounts:sendVerificationCode`, 'INFO');
+          log(`Payload: {"phoneNumber": "${fullPhone}"}`, 'INFO');
+          
+          const response = await fetch('/api/test-otp-dispatch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: jsonEncodeSafe({ phoneNumber: fullPhone, apiKey: FIREBASE_API_KEY })
+          });
+
+          const data = await response.json();
+          renderDispatchResult(data, fullPhone);
+        } catch (err) {
+          log(`Local Network / Server Exception: ${err.message}`, 'ERROR');
+          renderErrorBanner(`Local Server Error: ${err.message}`);
+        } finally {
+          sendBtn.disabled = false;
+          sendBtn.innerHTML = '<span>📲</span> Send OTP Verification Code';
+        }
+      } else {
+        // Web SDK with reCAPTCHA
+        try {
+          log(`Dispatching via Firebase Web Client SDK...`, 'INFO');
+          initWebRecaptcha();
+          const confirmationResult = await firebase.auth().signInWithPhoneNumber(fullPhone, recaptchaVerifier);
+          webConfirmationResult = confirmationResult;
+          activeSessionInfo = confirmationResult.verificationId;
+          document.getElementById('sessionInfoInput').value = activeSessionInfo;
+
+          log(`Web SDK Dispatch SUCCESS! Verification ID: ${activeSessionInfo}`, 'SUCCESS');
+          renderSuccessBanner(
+            `SMS Verification Code Dispatched!`,
+            `Google Firebase accepted phone ${fullPhone} and handed the SMS to telecom aggregators. Check your mobile device.`
+          );
+        } catch (sdkErr) {
+          log(`Firebase Web SDK Error: [${sdkErr.code}] ${sdkErr.message}`, 'ERROR');
+          renderErrorBanner(`Firebase Error [${sdkErr.code}]: ${sdkErr.message}`);
+        } finally {
+          sendBtn.disabled = false;
+          sendBtn.innerHTML = '<span>📲</span> Send OTP Verification Code';
+        }
+      }
+    }
+
+    function renderDispatchResult(data, phone) {
+      if (data.logs) {
+        data.logs.forEach(l => log(l.message, l.level));
+      }
+
+      const diagCard = document.getElementById('diagnosticCard');
+      diagCard.style.display = 'block';
+
+      if (data.success && data.httpStatus === 200) {
+        activeSessionInfo = data.sessionInfo;
+        document.getElementById('sessionInfoInput').value = activeSessionInfo;
+
+        renderSuccessBanner(
+          `Google Identity Toolkit returned HTTP 200 OK!`,
+          `Google servers accepted the request and generated session token (length ${data.sessionInfo.length}).\n\n` +
+          `• Telecom Status: Google dispatched the message to the carrier network.\n` +
+          `• If no SMS arrives within 60 seconds: (1) Check if ${phone} is in 'Phone numbers for testing' in Firebase Console (which suppresses real SMS), (2) Check if SMS Region Policy in Firebase Settings has India (+91) allowed, or (3) Your telecom operator (Jio/Airtel) dropped the SMS.`
+        );
+      } else {
+        renderErrorBanner(`Google Identity Toolkit Error HTTP ${data.httpStatus || 500}: ${JSON.stringify(data.error || 'Unknown error')}`);
+      }
+
+      document.getElementById('rawJson').innerText = JSON.stringify(data, null, 2);
+    }
+
+    async function triggerOtpVerify() {
+      const code = document.getElementById('otpCodeInput').value.trim();
+      if (!code || code.length !== 6) {
+        log('Error: Please enter a 6-digit OTP code to verify.', 'ERROR');
+        return;
+      }
+      if (!activeSessionInfo) {
+        log('Error: No active sessionInfo token found. Please dispatch an OTP first.', 'ERROR');
+        return;
+      }
+
+      const verifyBtn = document.getElementById('verifyBtn');
+      verifyBtn.disabled = true;
+      verifyBtn.innerHTML = '<span>⏳</span> Verifying against Google...';
+
+      log(`[STEP 2] Verifying code '${code}' with sessionInfo...`, 'INFO');
+
+      try {
+        if (webConfirmationResult) {
+          const cred = await webConfirmationResult.confirm(code);
+          log(`Firebase Web Auth SUCCESS! User UID: ${cred.user.uid}, Phone: ${cred.user.phoneNumber}`, 'SUCCESS');
+          renderSuccessBanner(
+            `Authentication Verified & Completed!`,
+            `User UID: ${cred.user.uid}\nPhone Number: ${cred.user.phoneNumber}\nFull Firebase Authentication Token Generated.`
+          );
+        } else {
+          const res = await fetch('/api/test-otp-verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: jsonEncodeSafe({ sessionInfo: activeSessionInfo, code: code, apiKey: FIREBASE_API_KEY })
+          });
+          const data = await res.json();
+          if (data.logs) {
+            data.logs.forEach(l => log(l.message, l.level));
+          }
+
+          if (data.success && data.httpStatus === 200) {
+            log(`Google signInWithPhoneNumber SUCCESS! User UID: ${data.userUid}`, 'SUCCESS');
+            renderSuccessBanner(
+              `Authentication Verified & Completed!`,
+              `User UID: ${data.userUid}\nPhone Number: ${data.phoneNumber}\nProvider: Firebase Phone Auth`
+            );
+          } else {
+            const errCode = data.error?.error?.message || data.error?.message || 'INVALID_CODE';
+            log(`Verification Failed: Google returned '${errCode}' (HTTP ${data.httpStatus})`, 'ERROR');
+            renderErrorBanner(`Verification Failed: Google rejected this code as '${errCode}'. Please check your SMS or use test bypass code 112233.`);
+          }
+          document.getElementById('rawJson').innerText = JSON.stringify(data, null, 2);
+        }
+      } catch (err) {
+        log(`Verification Exception: ${err.message}`, 'ERROR');
+        renderErrorBanner(`Verification Exception: ${err.message}`);
+      } finally {
+        verifyBtn.disabled = false;
+        verifyBtn.innerHTML = '<span>✅</span> Verify Code with Firebase';
+      }
+    }
+
+    function renderSuccessBanner(title, body) {
+      const banner = document.getElementById('statusBanner');
+      banner.className = 'status-banner success';
+      banner.innerHTML = `<span>✅</span><div><strong>${escapeHtml(title)}</strong></div>`;
+      document.getElementById('diagnosticExplanation').innerText = body;
+    }
+
+    function renderErrorBanner(text) {
+      const banner = document.getElementById('statusBanner');
+      banner.className = 'status-banner error';
+      banner.innerHTML = `<span>❌</span><div><strong>${escapeHtml(text)}</strong></div>`;
+      document.getElementById('diagnosticExplanation').innerText = "Check the live terminal logs on the right for full technical payload breakdown.";
+    }
+
+    function toggleCollapsible(id) {
+      const el = document.getElementById(id);
+      el.classList.toggle('show');
+    }
+
+    function jsonEncodeSafe(obj) {
+      return JSON.stringify(obj);
+    }
+  </script>
+</body>
+</html>

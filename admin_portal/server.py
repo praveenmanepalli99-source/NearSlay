@@ -581,6 +581,143 @@ class AdminAndCloudApiHandler(BaseHTTPRequestHandler):
 
         db = load_db()
 
+        # Test OTP Dispatch Diagnostic Endpoint
+        if path in ('/api/test-otp-dispatch', '/test-otp-dispatch'):
+            raw_phone = str(body.get('phoneNumber') or body.get('phone') or '').strip()
+            digits = ''.join(c for c in raw_phone if c.isdigit())
+            phone = f"+91{digits[-10:]}" if len(digits) >= 10 else raw_phone
+            api_key = str(body.get('apiKey') or "AIzaSyBPkvHZceFr6JaDortv6K8FNtOOHaI77N0").strip()
+
+            logs = []
+            def log_disp(msg, level="INFO"):
+                logs.append({"timestamp": time.strftime('%H:%M:%S'), "level": level, "message": msg})
+
+            log_disp(f"Initiating diagnostic dispatch for phone: {phone}")
+            fb_url = f"https://identitytoolkit.googleapis.com/v1/accounts:sendVerificationCode?key={api_key}"
+            log_disp(f"Target URL: https://identitytoolkit.googleapis.com/v1/accounts:sendVerificationCode?key=AIzaSy...{api_key[-4:]}")
+            log_disp(f"Payload: {json.dumps({'phoneNumber': phone})}")
+
+            start_t = time.time()
+            try:
+                req = urllib.request.Request(
+                    fb_url,
+                    data=json.dumps({"phoneNumber": phone}).encode('utf-8'),
+                    headers={"Content-Type": "application/json", "User-Agent": "NearFixDiagnosticTool/2.0"},
+                    method='POST'
+                )
+                with urllib.request.urlopen(req, timeout=12) as resp:
+                    status = resp.status
+                    resp_data = resp.read().decode('utf-8')
+                    elapsed_ms = int((time.time() - start_t) * 1000)
+                    log_disp(f"Google Identity Toolkit Response Code: {status} (took {elapsed_ms}ms)", "SUCCESS")
+                    log_disp(f"Raw Response Body: {resp_data}")
+
+                    parsed_resp = json.loads(resp_data)
+                    session_info = parsed_resp.get("sessionInfo")
+
+                    diagnostics = {
+                        "status": "ACCEPTED_BY_GOOGLE",
+                        "sessionInfo": session_info,
+                        "sessionInfoLength": len(session_info) if session_info else 0,
+                        "explanation": "Google servers accepted the request and generated a sessionInfo token.",
+                        "carrierAdvice": "If SMS is not received within 60s: (1) Check if the number is in 'Phone numbers for testing' in Firebase Console (which suppresses real SMS), (2) Check SMS Region Policy in Firebase Settings allows India (+91), or (3) Telecom operator (Jio/Airtel/Vi) dropped international SMS."
+                    }
+
+                    return self._send_json({
+                        "success": True,
+                        "phone": phone,
+                        "httpStatus": status,
+                        "elapsedMs": elapsed_ms,
+                        "sessionInfo": session_info,
+                        "response": parsed_resp,
+                        "diagnostics": diagnostics,
+                        "logs": logs
+                    })
+            except urllib.error.HTTPError as he:
+                elapsed_ms = int((time.time() - start_t) * 1000)
+                err_body = he.read().decode('utf-8')
+                log_disp(f"Google returned HTTP Error {he.code} (took {elapsed_ms}ms)", "ERROR")
+                log_disp(f"Error Body: {err_body}", "ERROR")
+                try:
+                    err_json = json.loads(err_body)
+                except Exception:
+                    err_json = {"raw": err_body}
+                return self._send_json({
+                    "success": False,
+                    "phone": phone,
+                    "httpStatus": he.code,
+                    "elapsedMs": elapsed_ms,
+                    "error": err_json,
+                    "logs": logs
+                }, status=he.code)
+            except Exception as ex:
+                elapsed_ms = int((time.time() - start_t) * 1000)
+                log_disp(f"Network Exception: {str(ex)}", "ERROR")
+                return self._send_json({
+                    "success": False,
+                    "phone": phone,
+                    "error": str(ex),
+                    "logs": logs
+                }, status=500)
+
+        # Test OTP Verify Diagnostic Endpoint
+        if path in ('/api/test-otp-verify', '/test-otp-verify'):
+            session_info = str(body.get('sessionInfo') or '').strip()
+            code = str(body.get('code') or '').strip()
+            api_key = str(body.get('apiKey') or "AIzaSyBPkvHZceFr6JaDortv6K8FNtOOHaI77N0").strip()
+
+            logs = []
+            def log_ver(msg, level="INFO"):
+                logs.append({"timestamp": time.strftime('%H:%M:%S'), "level": level, "message": msg})
+
+            log_ver(f"Verifying code '{code}' against sessionInfo (len: {len(session_info)})")
+            fb_url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPhoneNumber?key={api_key}"
+            payload = {"sessionInfo": session_info, "code": code}
+
+            start_t = time.time()
+            try:
+                req = urllib.request.Request(
+                    fb_url,
+                    data=json.dumps(payload).encode('utf-8'),
+                    headers={"Content-Type": "application/json", "User-Agent": "NearFixDiagnosticTool/2.0"},
+                    method='POST'
+                )
+                with urllib.request.urlopen(req, timeout=10) as resp:
+                    status = resp.status
+                    resp_data = resp.read().decode('utf-8')
+                    elapsed_ms = int((time.time() - start_t) * 1000)
+                    log_ver(f"Google signInWithPhoneNumber Response Code: {status} (took {elapsed_ms}ms)", "SUCCESS")
+                    log_ver(f"Raw Response Body: {resp_data}")
+                    parsed_resp = json.loads(resp_data)
+                    return self._send_json({
+                        "success": True,
+                        "httpStatus": status,
+                        "elapsedMs": elapsed_ms,
+                        "userUid": parsed_resp.get("localId"),
+                        "phoneNumber": parsed_resp.get("phoneNumber"),
+                        "response": parsed_resp,
+                        "logs": logs
+                    })
+            except urllib.error.HTTPError as he:
+                elapsed_ms = int((time.time() - start_t) * 1000)
+                err_body = he.read().decode('utf-8')
+                log_ver(f"Google signInWithPhoneNumber Failed: HTTP {he.code}", "ERROR")
+                log_ver(f"Error Body: {err_body}", "ERROR")
+                try:
+                    err_json = json.loads(err_body)
+                except Exception:
+                    err_json = {"raw": err_body}
+                return self._send_json({
+                    "success": False,
+                    "httpStatus": he.code,
+                    "elapsedMs": elapsed_ms,
+                    "error": err_json,
+                    "logs": logs
+                }, status=he.code)
+            except Exception as ex:
+                log_ver(f"Verification Exception: {str(ex)}", "ERROR")
+                return self._send_json({"success": False, "error": str(ex), "logs": logs}, status=500)
+
         # Force Full Firebase Realtime Database Sync
         if path in ('/api/firebase-sync', '/firebase-sync'):
             try:

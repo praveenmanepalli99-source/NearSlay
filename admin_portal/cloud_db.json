@@ -71,7 +71,7 @@
       "distanceMeters": 250,
       "hourlyRate": 399,
       "id": "prov_1792146849819",
-      "isAvailable": true,
+      "isAvailable": false,
       "isVerified": true,
       "lastReminderSentDay": 0,
       "last_reminder_sent_day": 0,

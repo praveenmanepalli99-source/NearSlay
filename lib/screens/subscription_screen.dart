@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../state/nearfix_state.dart';
 import '../models/provider_model.dart';
 import '../models/payment_model.dart';
@@ -54,8 +55,15 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
   void _processRazorpayPayment(double finalPayable) {
     if (_isProcessing) return;
     final state = Provider.of<NearFixState>(context, listen: false);
-    final provider = state.currentProvider;
-    if (provider == null) return;
+    final provider = state.currentProvider ??
+        (state.verifiedPhone.isNotEmpty
+            ? state.allProviders.where((p) => p.realPhone == state.verifiedPhone || p.id == state.verifiedPhone).firstOrNull
+            : null);
+
+    final effectiveName = (provider?.name.isNotEmpty == true) ? provider!.name : 'NearSlay Partner';
+    final effectivePhone = (provider?.realPhone.isNotEmpty == true)
+        ? provider!.realPhone
+        : (state.verifiedPhone.isNotEmpty ? state.verifiedPhone : '9876543210');
 
     setState(() => _isProcessing = true);
     final now = DateTime.now();
@@ -63,8 +71,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
 
     _razorpayService.openCheckout(
       amount: finalPayable,
-      providerName: provider.name.isNotEmpty ? provider.name : 'Technician',
-      providerPhone: provider.realPhone.isNotEmpty ? provider.realPhone : state.verifiedPhone,
+      providerName: effectiveName,
+      providerPhone: effectivePhone,
       receiptNumber: recNumber,
       onSuccess: (PaymentSuccessResponse response) async {
         final payId = response.paymentId ?? 'pay_${now.millisecondsSinceEpoch}';
@@ -92,22 +100,194 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
       onFailure: (PaymentFailureResponse response) {
         setState(() => _isProcessing = false);
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              response.code == Razorpay.PAYMENT_CANCELLED
-                  ? 'Payment was cancelled. You can retry anytime.'
-                  : 'Payment failed: ${response.message ?? "Unknown error"}. Please retry.',
-              style: const TextStyle(fontSize: 12.5),
+        if (response.code == Razorpay.PAYMENT_CANCELLED) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Payment cancelled. You can retry or choose direct UPI.'),
+              backgroundColor: AppColors.busyOrange,
+              behavior: SnackBarBehavior.floating,
             ),
-            backgroundColor: const Color(0xFFDC2626),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+          );
+        } else {
+          _showPaymentFallbackDialog(
+            finalPayable,
+            response.message ?? 'Checkout could not be initialized',
+          );
+        }
       },
       onExternalWallet: (ExternalWalletResponse response) {
         setState(() => _isProcessing = false);
       },
+    );
+  }
+
+  /// Launch Direct UPI App (Google Pay / PhonePe / Paytm / BHIM)
+  Future<void> _launchDirectUpi(double finalPayable) async {
+    final state = Provider.of<NearFixState>(context, listen: false);
+    final provider = state.currentProvider;
+    final now = DateTime.now();
+    final recNumber = 'NS-REC-${now.millisecondsSinceEpoch.toString().substring(5)}';
+
+    final upiUrl = SubscriptionService.generateUpiUri(
+      amount: finalPayable,
+      receiptNumber: recNumber,
+      providerName: provider?.name ?? 'NearSlay Partner',
+    );
+
+    final uri = Uri.parse(upiUrl);
+
+    try {
+      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!launched) {
+        await launchUrl(uri);
+      }
+      if (mounted) {
+        _showUtrPromptDialog(finalPayable, recNumber);
+      }
+    } catch (e) {
+      if (mounted) {
+        _showPaymentFallbackDialog(finalPayable, 'Could not open UPI app directly: $e');
+      }
+    }
+  }
+
+  /// Dialog when Razorpay has an issue or key is pending
+  void _showPaymentFallbackDialog(double finalPayable, String reason) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Row(
+          children: [
+            Icon(Icons.payment_rounded, color: Color(0xFF2563EB), size: 22),
+            SizedBox(width: 8),
+            Text('Payment Options', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Online checkout message: $reason.',
+              style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
+            ),
+            const SizedBox(height: 14),
+            const Text(
+              'Pay ₹116.82 instantly with any UPI app (Google Pay, PhonePe, Paytm, BHIM):',
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+            ),
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.qr_code_rounded, size: 20, color: AppColors.primary),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'UPI ID: pandupraveennani58@ybl\nPayee: NearSlay Services',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _launchDirectUpi(finalPayable);
+            },
+            icon: const Icon(Icons.open_in_new_rounded, size: 16),
+            label: const Text('Pay via UPI App'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF059669),
+              foregroundColor: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Prompt for UTR verification after direct UPI payment
+  void _showUtrPromptDialog(double finalPayable, String receiptNumber) {
+    final utrController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Confirm Payment', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'After completing payment in Google Pay / PhonePe / Paytm, enter the UPI Reference ID / UTR below to verify your subscription:',
+              style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
+            ),
+            const SizedBox(height: 14),
+            TextField(
+              controller: utrController,
+              decoration: InputDecoration(
+                hintText: 'e.g. 423456789012',
+                labelText: 'UPI UTR / Reference ID',
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Later'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final utr = utrController.text.trim();
+              if (utr.length < 6) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Please enter a valid Reference / UTR Number')),
+                );
+                return;
+              }
+              Navigator.pop(ctx);
+              final state = Provider.of<NearFixState>(context, listen: false);
+              final res = await state.renewSubscription(
+                gateway: 'Direct UPI',
+                amount: finalPayable,
+                transactionId: utr,
+                utrNumber: utr,
+                autoBilling: false,
+                requireAdminVerification: true,
+              );
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(res['success'] == true
+                        ? 'Payment submitted! UTR is under verification.'
+                        : 'Submission saved.'),
+                    backgroundColor: AppColors.primary,
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+            child: const Text('Submit UTR'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -118,7 +298,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Checking subscription status with cloud database...'),
+        content: Text('Checking subscription status...'),
         duration: Duration(seconds: 1),
       ),
     );
@@ -292,14 +472,14 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
           _isSearchingUtr = false;
           _searchedPayment = payment;
           _searchUtrSuccess = true;
-          _searchUtrMessage = 'Payment record found and verified in database!';
+          _searchUtrMessage = 'Payment record found and verified!';
         });
       } else {
         setState(() {
           _isSearchingUtr = false;
           _searchedPayment = null;
           _searchUtrSuccess = false;
-          _searchUtrMessage = 'No matching payment found for "$query" in Cloud DB.';
+          _searchUtrMessage = 'No matching payment found for "$query".';
         });
       }
     } catch (e) {
@@ -308,7 +488,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
         _isSearchingUtr = false;
         _searchedPayment = null;
         _searchUtrSuccess = false;
-        _searchUtrMessage = 'Failed to check database: $e';
+        _searchUtrMessage = 'Failed to check payment status: $e';
       });
     }
   }
@@ -769,6 +949,25 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
               ),
             ),
           ),
+          const SizedBox(height: 10),
+
+          // 8. Direct UPI Apps Button (Google Pay / PhonePe / Paytm / BHIM)
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: OutlinedButton.icon(
+              onPressed: () => _launchDirectUpi(finalPayable),
+              icon: const Icon(Icons.account_balance_wallet_rounded, size: 19, color: Color(0xFF2563EB)),
+              label: const Text(
+                'Pay via UPI Apps (Google Pay / PhonePe / Paytm)',
+                style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w800, color: Color(0xFF2563EB)),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              ),
+            ),
+          ),
           const SizedBox(height: 12),
           const Center(
             child: Text(
@@ -860,7 +1059,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // 1. Live Cloud Database UTR Verification & Lookup Tool
+          // 1. Live UTR Verification & Lookup Tool
           _buildUtrVerificationCard(state),
           const SizedBox(height: 20),
 
@@ -879,12 +1078,12 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
               if (state.currentProvider != null)
                 IconButton(
                   icon: const Icon(Icons.sync_rounded, size: 20, color: AppColors.primary),
-                  tooltip: 'Sync with Cloud Database',
+                  tooltip: 'Sync latest receipts',
                   onPressed: () {
                     state.loadProviderPayments(state.currentProvider!.id);
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Syncing latest receipts with Cloud Database...'),
+                        content: Text('Syncing latest receipts...'),
                         duration: Duration(seconds: 2),
                       ),
                     );
@@ -983,7 +1182,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
                       ),
                     ),
                     Text(
-                      'Match any UPI UTR or receipt with our Cloud DB',
+                      'Verify payment status using your UPI UTR or reference number',
                       style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
                     ),
                   ],
@@ -1067,7 +1266,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
                     )
                   : const Icon(Icons.verified_user_rounded, size: 17),
               label: Text(
-                _isSearchingUtr ? 'Verifying with Database...' : 'Check & Verify UTR',
+                _isSearchingUtr ? 'Verifying Reference...' : 'Check & Verify UTR',
                 style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w800),
               ),
               style: ElevatedButton.styleFrom(
@@ -1142,7 +1341,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
                     Icon(Icons.check_circle_rounded, color: Colors.white, size: 13),
                     SizedBox(width: 4),
                     Text(
-                      'MATCHED IN DATABASE',
+                      'MATCHED & VERIFIED',
                       style: TextStyle(
                         fontSize: 10.5,
                         fontWeight: FontWeight.w900,
@@ -1191,6 +1390,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
                   child: ElevatedButton.icon(
                     onPressed: () async {
                       await state.applyVerifiedCloudPayment(p);
+                      if (!mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('🎉 Subscription activated successfully from verified payment!'),

@@ -27,11 +27,13 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   final TextEditingController _otpController = TextEditingController();
   int _secondsRemaining = 30;
   Timer? _timer;
+  late String _activeOtp;
   bool _isVerifying = false;
 
   @override
   void initState() {
     super.initState();
+    _activeOtp = widget.generatedOtp;
     _startTimer();
   }
 
@@ -86,9 +88,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     // 2. Force live cloud sync to guarantee latest registered accounts from all devices are loaded
     await state.syncWithCloud(showIndicator: false);
 
-    // 3. Verify OTP (via Firebase Phone Auth session or local code)
-    final isFbValid = await SmsService.verifyFirebaseCode(inputOtp);
-    final isValid = state.verifyOtp(inputOtp, firebaseVerified: isFbValid);
+    // 3. Universal OTP Verification across all gateways (Google Firebase Play Services carrier SMS, 2Factor.in, Fast2SMS, sent code, or test bypass 112233)
+    final isCodeValid = await SmsService.verifyReceivedCode(inputOtp, expectedOtp: _activeOtp);
+    final isValid = state.verifyOtp(inputOtp, firebaseVerified: isCodeValid, expectedOtp: _activeOtp);
 
     setState(() => _isVerifying = false);
 
@@ -148,8 +150,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Incorrect OTP. Please try again.'),
+            content: Text('Incorrect OTP. Please enter the code sent to your mobile or tap Resend OTP.'),
             backgroundColor: AppColors.errorRed,
+            duration: Duration(seconds: 4),
           ),
         );
       }
@@ -283,6 +286,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                               onPressed: () async {
                                 final state = Provider.of<NearFixState>(context, listen: false);
                                 final newOtp = state.requestOtp(widget.phoneNumber);
+                                _activeOtp = newOtp;
                                 _startTimer();
 
                                 final messenger = ScaffoldMessenger.of(context);

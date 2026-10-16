@@ -53,4 +53,5 @@ app.*.map.json
 *.jks
 *.keystore
 key.properties
+.github/
 

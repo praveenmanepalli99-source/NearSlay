@@ -83,12 +83,14 @@ class MainActivity: FlutterActivity() {
                                     }
                                 if (!callbackDispatched) {
                                     callbackDispatched = true
-                                    result.success(mapOf(
-                                        "success" to true,
-                                        "autoVerified" to true,
-                                        "smsCode" to (smsCode ?: ""),
-                                        "message" to "Auto-verified via Google Play Services"
-                                    ))
+                                    runOnUiThread {
+                                        result.success(mapOf(
+                                            "success" to true,
+                                            "autoVerified" to true,
+                                            "smsCode" to (smsCode ?: ""),
+                                            "message" to "Auto-verified via Google Play Services"
+                                        ))
+                                    }
                                 }
                             }
 
@@ -96,10 +98,12 @@ class MainActivity: FlutterActivity() {
                                 android.util.Log.e("NearFixAuth", "onVerificationFailed: ${e.localizedMessage}", e)
                                 if (!callbackDispatched) {
                                     callbackDispatched = true
-                                    result.success(mapOf(
-                                        "success" to false,
-                                        "message" to (e.localizedMessage ?: "Firebase verification failed")
-                                    ))
+                                    runOnUiThread {
+                                        result.success(mapOf(
+                                            "success" to false,
+                                            "message" to (e.localizedMessage ?: "Firebase verification failed")
+                                        ))
+                                    }
                                 }
                             }
 
@@ -112,11 +116,13 @@ class MainActivity: FlutterActivity() {
                                 resendToken = token
                                 if (!callbackDispatched) {
                                     callbackDispatched = true
-                                    result.success(mapOf(
-                                        "success" to true,
-                                        "verificationId" to verificationId,
-                                        "message" to "Real SMS verification code dispatched from Firebase"
-                                    ))
+                                    runOnUiThread {
+                                        result.success(mapOf(
+                                            "success" to true,
+                                            "verificationId" to verificationId,
+                                            "message" to "Real SMS verification code dispatched from Firebase"
+                                        ))
+                                    }
                                 }
                             }
                         }
@@ -134,10 +140,12 @@ class MainActivity: FlutterActivity() {
                         PhoneAuthProvider.verifyPhoneNumber(optionsBuilder.build())
                     } catch (e: Exception) {
                         android.util.Log.e("NearFixAuth", "Exception starting PhoneAuth: ${e.localizedMessage}", e)
-                        result.success(mapOf(
-                            "success" to false,
-                            "message" to (e.localizedMessage ?: "Failed to initiate Firebase SMS")
-                        ))
+                        runOnUiThread {
+                            result.success(mapOf(
+                                "success" to false,
+                                "message" to (e.localizedMessage ?: "Failed to initiate Firebase SMS")
+                            ))
+                        }
                     }
                 }
                 "verifyFirebaseCode" -> {
@@ -145,7 +153,7 @@ class MainActivity: FlutterActivity() {
                     val verificationId = call.argument<String>("verificationId") ?: storedVerificationId ?: ""
 
                     if (verificationId.isEmpty() || code.isEmpty()) {
-                        result.success(false)
+                        runOnUiThread { result.success(false) }
                         return@setMethodCallHandler
                     }
 
@@ -154,18 +162,20 @@ class MainActivity: FlutterActivity() {
                         val auth = FirebaseAuth.getInstance()
                         auth.signInWithCredential(credential)
                             .addOnCompleteListener { task ->
-                                if (task.isSuccessful) {
-                                    val user = auth.currentUser
-                                    android.util.Log.d("NearFixAuth", "signInWithCredential SUCCESS. User UID: ${user?.uid}, Phone: ${user?.phoneNumber}")
-                                    result.success(true)
-                                } else {
-                                    android.util.Log.e("NearFixAuth", "signInWithCredential FAILED: ${task.exception?.localizedMessage}")
-                                    result.success(false)
+                                runOnUiThread {
+                                    if (task.isSuccessful) {
+                                        val user = auth.currentUser
+                                        android.util.Log.d("NearFixAuth", "signInWithCredential SUCCESS. User UID: ${user?.uid}, Phone: ${user?.phoneNumber}")
+                                        result.success(true)
+                                    } else {
+                                        android.util.Log.e("NearFixAuth", "signInWithCredential FAILED: ${task.exception?.localizedMessage}")
+                                        result.success(false)
+                                    }
                                 }
                             }
                     } catch (e: Exception) {
                         android.util.Log.e("NearFixAuth", "Exception during verifyFirebaseCode: ${e.localizedMessage}", e)
-                        result.success(false)
+                        runOnUiThread { result.success(false) }
                     }
                 }
                 else -> result.notImplemented()

@@ -11,6 +11,7 @@ import '../services/location_service.dart';
 import '../services/cloud_sync_service.dart';
 import '../services/firebase_service.dart';
 import '../services/subscription_service.dart';
+import '../services/sms_service.dart';
 import '../main.dart';
 
 enum AppRole {
@@ -577,11 +578,17 @@ class NearFixState extends ChangeNotifier {
     return {'exists': false};
   }
 
-  /// Verify OTP strictly against Firebase Phone Auth, generated OTP code, or default testing OTP 112233
-  bool verifyOtp(String enteredOtp, {bool firebaseVerified = false}) {
+  /// Verify OTP strictly against Firebase Phone Auth, generated OTP code, last sent OTP, or default testing OTP 112233
+  bool verifyOtp(String enteredOtp, {bool firebaseVerified = false, String? expectedOtp}) {
     final cleanOtp = enteredOtp.trim();
-    if (firebaseVerified ||
-        (cleanOtp.isNotEmpty && (cleanOtp == _currentGeneratedOtp || cleanOtp == '112233'))) {
+    final bool matchesCode = cleanOtp.isNotEmpty && (
+      cleanOtp == _currentGeneratedOtp ||
+      cleanOtp == '112233' ||
+      cleanOtp == SmsService.lastSentOtpCode ||
+      (expectedOtp != null && cleanOtp == expectedOtp.trim())
+    );
+
+    if (firebaseVerified || matchesCode) {
       // Check if this mobile is already registered as a provider or resident
       final account = checkExistingAccount(_verifiedPhone);
 

@@ -57,17 +57,19 @@ class RazorpayService {
 
     // Razorpay requires amount in Paise (₹1 = 100 paise)
     final int amountInPaise = (amount * 100).round();
-    final cleanPhone = providerPhone.replaceAll(RegExp(r'\D'), '');
+    final digits = providerPhone.replaceAll(RegExp(r'\D'), '');
+    final cleanPhone = digits.length >= 10
+        ? digits.substring(digits.length - 10)
+        : (digits.isNotEmpty ? digits.padLeft(10, '9') : '9876543210');
 
-    final options = {
+    final options = <String, dynamic>{
       'key': razorpayKeyId,
       'amount': amountInPaise,
       'name': 'NearSlay Technologies',
       'description': 'NearSlay Pro (1 Month) - Base ₹99 + 18% GST',
       'currency': 'INR',
-      'timeout': 180, // 3 minutes timeout
       'prefill': {
-        'contact': cleanPhone.length > 10 ? cleanPhone.substring(cleanPhone.length - 10) : cleanPhone,
+        'contact': cleanPhone,
         'email': (providerEmail != null && providerEmail.isNotEmpty)
             ? providerEmail
             : 'support@nearslay.com',
@@ -75,6 +77,10 @@ class RazorpayService {
       },
       'theme': {
         'color': '#059669',
+      },
+      'retry': {
+        'enabled': true,
+        'max_count': 1,
       },
       'notes': {
         'plan': 'nearslay_pro_monthly',
@@ -85,9 +91,6 @@ class RazorpayService {
         'total_gst_18_pct': '17.82',
         'total_payable_inr': amount.toStringAsFixed(2),
       },
-      'external': {
-        'wallets': ['paytm'],
-      }
     };
 
     try {

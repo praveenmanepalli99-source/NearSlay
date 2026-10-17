@@ -443,12 +443,12 @@ class SmsService {
     }
   }
 
-  /// Fast2SMS OTP Gateway (Supports both Free Plan OTP Route & Quick SMS 'q' Route)
+  /// Fast2SMS OTP Gateway (Single-request optimized to prevent duplicate wallet deductions)
   static Future<SmsResult> _sendViaFast2Sms(String phone, String otp, String apiKey) async {
     try {
       final url = Uri.parse('https://www.fast2sms.com/dev/bulkV2');
 
-      // Attempt 1: Standard OTP Route
+      // Attempt 1: Standard Fast2SMS OTP Route
       final otpResponse = await http.post(
         url,
         headers: {
@@ -460,7 +460,7 @@ class SmsService {
           'route': 'otp',
           'numbers': phone,
         }),
-      ).timeout(const Duration(seconds: 8));
+      ).timeout(const Duration(seconds: 10));
 
       if (otpResponse.statusCode == 200) {
         try {
@@ -473,20 +473,18 @@ class SmsService {
               sessionId: data['request_id']?.toString(),
             );
           }
+          // If insufficient balance, return immediately - do not retry
+          if (data['status_code'] == 416) {
+            return SmsResult(
+              success: false,
+              isSimulated: false,
+              message: data['message']?.toString() ?? 'Fast2SMS: Insufficient wallet balance.',
+            );
+          }
         } catch (_) {}
       }
 
-      String? otpErrorMsg;
-      try {
-        final data = jsonDecode(otpResponse.body);
-        if (data['message'] != null) {
-          otpErrorMsg = data['message'] is List
-              ? (data['message'] as List).join(', ')
-              : data['message'].toString();
-        }
-      } catch (_) {}
-
-      // Attempt 2: Quick SMS 'q' Route (Free Plan Fallback)
+      // Attempt 2: Quick SMS 'q' Route fallback (Only if OTP route returned 400/DLT restriction)
       final quickResponse = await http.post(
         url,
         headers: {
@@ -500,7 +498,7 @@ class SmsService {
           'flash': 0,
           'numbers': phone,
         }),
-      ).timeout(const Duration(seconds: 8));
+      ).timeout(const Duration(seconds: 10));
 
       if (quickResponse.statusCode == 200) {
         try {
@@ -513,60 +511,21 @@ class SmsService {
               sessionId: data['request_id']?.toString(),
             );
           }
+          final msg = data['message'] is List
+              ? (data['message'] as List).join(', ')
+              : data['message']?.toString();
+          return SmsResult(
+            success: false,
+            isSimulated: false,
+            message: msg ?? 'Fast2SMS dispatch failed',
+          );
         } catch (_) {}
       }
 
-      String? quickErrorMsg;
-      try {
-        final data = jsonDecode(quickResponse.body);
-        if (data['message'] != null) {
-          quickErrorMsg = data['message'] is List
-              ? (data['message'] as List).join(', ')
-              : data['message'].toString();
-        }
-      } catch (_) {}
-
-      // Attempt 3: Fast2SMS GET API
-      try {
-        final getUrl = Uri.parse(
-            'https://www.fast2sms.com/dev/bulkV2?authorization=$apiKey&route=otp&variables_values=$otp&numbers=$phone');
-        final getRes = await http.get(getUrl).timeout(const Duration(seconds: 6));
-        if (getRes.statusCode == 200) {
-          final data = jsonDecode(getRes.body);
-          if (data['return'] == true) {
-            return SmsResult(
-              success: true,
-              isSimulated: false,
-              message: 'SMS delivered to Registered Mobile number',
-              sessionId: data['request_id']?.toString(),
-            );
-          }
-        }
-      } catch (_) {}
-
-      // Attempt 4: Fast2SMS Quick GET API
-      try {
-        final getQuickUrl = Uri.parse(
-            'https://www.fast2sms.com/dev/bulkV2?authorization=$apiKey&route=q&message=${Uri.encodeComponent("Your NearSlay OTP verification code is $otp.")}&language=english&flash=0&numbers=$phone');
-        final getQuickRes = await http.get(getQuickUrl).timeout(const Duration(seconds: 6));
-        if (getQuickRes.statusCode == 200) {
-          final data = jsonDecode(getQuickRes.body);
-          if (data['return'] == true) {
-            return SmsResult(
-              success: true,
-              isSimulated: false,
-              message: 'SMS delivered to Registered Mobile number',
-              sessionId: data['request_id']?.toString(),
-            );
-          }
-        }
-      } catch (_) {}
-
-      final finalError = otpErrorMsg ?? quickErrorMsg ?? 'Fast2SMS dispatch failed';
-      return SmsResult(
+      return const SmsResult(
         success: false,
         isSimulated: false,
-        message: finalError,
+        message: 'Fast2SMS dispatch failed. Please check wallet balance.',
       );
     } catch (e) {
       return SmsResult(

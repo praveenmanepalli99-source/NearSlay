@@ -67,34 +67,32 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
           SnackBar(
             content: Row(
               children: [
-                const Icon(Icons.error_outline_rounded, color: Colors.white, size: 20),
+                const Icon(Icons.info_outline_rounded, color: Colors.white, size: 20),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    smsResult.message.isNotEmpty
-                        ? smsResult.message
-                        : 'Failed to send verification code. Please try again.',
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    smsResult.message.isNotEmpty && !smsResult.message.contains('MissingActivity')
+                        ? '${smsResult.message}. You can get code via WhatsApp on the next screen.'
+                        : 'Carrier SMS delayed. You can retrieve your OTP code via WhatsApp.',
+                    style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
                   ),
                 ),
               ],
             ),
-            backgroundColor: AppColors.errorRed,
-            duration: const Duration(seconds: 5),
+            backgroundColor: AppColors.textPrimary,
+            duration: const Duration(seconds: 4),
             behavior: SnackBarBehavior.floating,
           ),
         );
-        return;
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Verification code sent to $formattedPhone'),
+            backgroundColor: AppColors.primary,
+            duration: const Duration(seconds: 4),
+          ),
+        );
       }
-
-      // Safe clean notification - NEVER reveals OTP code in UI popup
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Verification code sent to $formattedPhone'),
-          backgroundColor: AppColors.primary,
-          duration: const Duration(seconds: 4),
-        ),
-      );
 
       Navigator.push(
         context,

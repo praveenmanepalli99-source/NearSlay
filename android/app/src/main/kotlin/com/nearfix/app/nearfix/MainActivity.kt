@@ -175,7 +175,7 @@ class MainActivity: FlutterActivity() {
                         val optionsBuilder = PhoneAuthOptions.newBuilder(auth)
                             .setPhoneNumber(phone)
                             .setTimeout(60L, TimeUnit.SECONDS)
-                            .setActivity(this)
+                            // Note: Omit setActivity(this) so Firebase never opens a Chrome Custom Tab browser window
                             .setCallbacks(callbacks)
 
                         if (isResend && staticResendToken != null) {

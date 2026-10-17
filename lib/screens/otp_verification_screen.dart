@@ -35,8 +35,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   bool _smsSending = true;
   String? _smsFailureReason;
   bool _isSendingWhatsApp = false;
-  String? _deliveredWhatsAppOtp;
-  String? _deliveredWhatsAppMessage;
 
   @override
   void initState() {
@@ -227,8 +225,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     if (!mounted) return;
     setState(() {
       _isSendingWhatsApp = false;
-      _deliveredWhatsAppOtp = _activeOtp;
-      _deliveredWhatsAppMessage = '$_activeOtp is your verification code for nearslay';
+      _smsFailed = false;
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -239,8 +236,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                'WhatsApp OTP: "$_deliveredWhatsAppMessage"',
-                style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
+                'Verification code dispatched to ${widget.phoneNumber}',
+                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
               ),
             ),
           ],
@@ -371,69 +368,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                         ),
                       ],
 
-                      // Delivered WhatsApp OTP Card
-                      if (_deliveredWhatsAppOtp != null) ...[
-                        Container(
-                          margin: const EdgeInsets.only(bottom: 18),
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF0FDF4),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFF22C55E), width: 1.5),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  const Icon(Icons.mark_chat_read_rounded, color: Color(0xFF16A34A), size: 18),
-                                  const SizedBox(width: 8),
-                                  const Expanded(
-                                    child: Text(
-                                      'WhatsApp Message Delivered',
-                                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Color(0xFF15803D)),
-                                    ),
-                                  ),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF15803D),
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                    child: const Text('WhatsApp', style: TextStyle(color: Colors.white, fontSize: 10.5, fontWeight: FontWeight.w700)),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                '"$_deliveredWhatsAppMessage"',
-                                style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700, color: Color(0xFF166534)),
-                              ),
-                              const SizedBox(height: 10),
-                              SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton.icon(
-                                  icon: const Icon(Icons.bolt_rounded, size: 16),
-                                  label: Text('Auto-Fill $_deliveredWhatsAppOtp & Proceed'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF16A34A),
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 10),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                  ),
-                                  onPressed: () {
-                                    _otpController.text = _deliveredWhatsAppOtp!;
-                                    _verifyOtp();
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-
                       // Prominent "Get via WhatsApp" Button when SMS failed
-                      if (_smsFailed && _deliveredWhatsAppOtp == null) ...[
+                      if (_smsFailed) ...[
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton.icon(
@@ -517,8 +453,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                                 final state = Provider.of<NearFixState>(context, listen: false);
                                 final newOtp = state.requestOtp(widget.phoneNumber);
                                 _activeOtp = newOtp;
-                                _deliveredWhatsAppOtp = null;
-                                _deliveredWhatsAppMessage = null;
                                 _startTimer();
 
                                 final messenger = ScaffoldMessenger.of(context);
@@ -551,7 +485,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                               },
                             ),
                           // Secondary WhatsApp Option (available if not already in failure prominent view)
-                          if (!_smsFailed || _deliveredWhatsAppOtp != null)
+                          if (!_smsFailed)
                             OutlinedButton.icon(
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: const Color(0xFF25D366),

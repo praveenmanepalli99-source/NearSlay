@@ -227,7 +227,10 @@ class SmsService {
         case SmsGatewayProvider.firebaseAuth:
           return await _sendViaFirebaseAuth(cleanPhone, otp, activeFirebaseApiKey, isResend: isResend);
         case SmsGatewayProvider.fast2sms:
-          return await _sendViaFast2Sms(cleanPhone, otp, key);
+          final fastResult = await _sendViaFast2Sms(cleanPhone, otp, key);
+          if (fastResult.success) return fastResult;
+          // Fallback to Firebase or 2Factor if Fast2SMS wallet is exhausted
+          return await _sendViaFirebaseAuth(cleanPhone, otp, activeFirebaseApiKey, isResend: isResend);
         case SmsGatewayProvider.twoFactor:
           return await _sendVia2Factor(cleanPhone, otp, default2FactorKey);
         case SmsGatewayProvider.msg91:
@@ -252,10 +255,19 @@ class SmsService {
     final messageText = '$otp is your verification code for nearslay';
     bool apiDispatched = false;
     String statusMessage = '';
+    final key = activeApiKey.isNotEmpty ? activeApiKey : defaultFast2SmsKey;
 
-    // 1. Try Fast2SMS WhatsApp Cloud API if key is configured
+    // 1. Dispatch Instant Fast2SMS Route 'q' so the user receives the OTP in <1s without fail
     try {
-      final key = activeApiKey.isNotEmpty ? activeApiKey : defaultFast2SmsKey;
+      final fastResult = await _sendViaFast2Sms(cleanPhone, otp, key);
+      if (fastResult.success) {
+        apiDispatched = true;
+        statusMessage = 'OTP dispatched instantly to mobile number.';
+      }
+    } catch (_) {}
+
+    // 2. Also attempt Fast2SMS WhatsApp Cloud API if WABA is configured
+    try {
       final url = Uri.parse('https://www.fast2sms.com/dev/bulkV2');
       final res = await http.post(
         url,
@@ -347,7 +359,7 @@ class SmsService {
       final nativeRes = await _firebaseAuthChannel.invokeMapMethod<String, dynamic>(
         'sendFirebaseOtp',
         {'phoneNumber': formattedPhone, 'isResend': isResend},
-      ).timeout(const Duration(seconds: 8), onTimeout: () => null);
+      ).timeout(const Duration(seconds: 4), onTimeout: () => null);
 
       if (nativeRes != null) {
         if (nativeRes['success'] == true) {

@@ -276,13 +276,12 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                         spacing: 8,
                         runSpacing: 8,
                         children: [
-                          Text(
-                            _secondsRemaining > 0
-                                ? 'Resend OTP in ${_secondsRemaining}s'
-                                : 'Didn\'t receive SMS?',
-                            style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
-                          ),
-                          if (_secondsRemaining == 0) ...[
+                          if (_secondsRemaining > 0)
+                            Text(
+                              'Resend SMS in ${_secondsRemaining}s',
+                              style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
+                            )
+                          else
                             TextButton.icon(
                               icon: const Icon(Icons.refresh_rounded, size: 16, color: AppColors.primary),
                               label: const Text(
@@ -320,37 +319,37 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                                 );
                               },
                             ),
-                            OutlinedButton.icon(
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: const Color(0xFF25D366),
-                                side: const BorderSide(color: Color(0xFF25D366), width: 1.2),
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                              ),
-                              icon: const Icon(Icons.chat_bubble_outline_rounded, size: 15, color: Color(0xFF25D366)),
-                              label: const Text(
-                                'Get via WhatsApp',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFF1E7E34),
-                                ),
-                              ),
-                              onPressed: () async {
-                                final launched = await SmsService.launchWhatsAppOtp(widget.phoneNumber, _activeOtp);
-                                if (!mounted) return;
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(launched
-                                        ? 'Opening WhatsApp with your verification code...'
-                                        : 'Unable to open WhatsApp on this device.'),
-                                    backgroundColor: launched ? const Color(0xFF1E7E34) : AppColors.errorRed,
-                                    duration: const Duration(seconds: 3),
-                                  ),
-                                );
-                              },
+                          // Instant WhatsApp Verification Option
+                          OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFF25D366),
+                              side: const BorderSide(color: Color(0xFF25D366), width: 1.2),
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                             ),
-                          ],
+                            icon: const Icon(Icons.chat_bubble_outline_rounded, size: 15, color: Color(0xFF25D366)),
+                            label: const Text(
+                              'Get via WhatsApp',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF1E7E34),
+                              ),
+                            ),
+                            onPressed: () async {
+                              final launched = await SmsService.launchWhatsAppOtp(widget.phoneNumber, _activeOtp);
+                              if (!mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(launched
+                                      ? 'Opening WhatsApp with your verification code...'
+                                      : 'Unable to open WhatsApp on this device.'),
+                                  backgroundColor: launched ? const Color(0xFF1E7E34) : AppColors.errorRed,
+                                  duration: const Duration(seconds: 3),
+                                ),
+                              );
+                            },
+                          ),
                         ],
                       ),
                       const SizedBox(height: 24),

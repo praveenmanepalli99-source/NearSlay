@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class SmsResult {
   final bool success;
@@ -37,7 +36,7 @@ class SmsService {
   static const String defaultFirebaseApiKey = 'AIzaSyBPkvHZceFr6JaDortv6K8FNtOOHaI77N0';
   static const String default2FactorKey = 'c22862fa-ab7c-11f1-9cb1-0200cd936042';
   static const String defaultFast2SmsKey =
-      'dIc1LzfVBHkEPuq8htso6YenWy25SCMDpKJ4UGQaglmi0FAxj3epD8fQYq35HkKnLMl2NojBPO1UZSRa';
+      '3KHacTMhRe0EmKK55nZUYKQ1YRP8wKR2K6UrcJNlSK3bCYemH9JxVdGpNpuQ';
 
   static String activeApiKey = defaultFast2SmsKey;
   static String activeFirebaseApiKey = defaultFirebaseApiKey;
@@ -333,23 +332,6 @@ class SmsService {
     };
   }
 
-  /// Launch native WhatsApp directly with prefilled verification code (direct app intent without browser redirects)
-  static Future<bool> launchWhatsAppOtp(String phone, String otp) async {
-    final cleanPhone = clean10DigitPhone(phone);
-    final message = Uri.encodeComponent(
-      '$otp is your verification code for nearslay',
-    );
-    // Direct native WhatsApp intent scheme to prevent browser redirects
-    final uri = Uri.parse('whatsapp://send?phone=91$cleanPhone&text=$message');
-    try {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-        return true;
-      }
-    } catch (_) {}
-    return false;
-  }
-
   /// Google Firebase Phone Authentication (Primary: Native Carrier SMS, Fallbacks: Fast2SMS, 2Factor, Identity Toolkit)
   static Future<SmsResult> _sendViaFirebaseAuth(
     String phone,
@@ -538,43 +520,7 @@ class SmsService {
     try {
       final url = Uri.parse('https://www.fast2sms.com/dev/bulkV2');
 
-      // Attempt 1: Standard Fast2SMS OTP Route
-      final otpResponse = await http.post(
-        url,
-        headers: {
-          'authorization': apiKey,
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'variables_values': otp,
-          'route': 'otp',
-          'numbers': phone,
-        }),
-      ).timeout(const Duration(seconds: 10));
-
-      if (otpResponse.statusCode == 200) {
-        try {
-          final data = jsonDecode(otpResponse.body);
-          if (data['return'] == true) {
-            return SmsResult(
-              success: true,
-              isSimulated: false,
-              message: 'SMS delivered to Registered Mobile number',
-              sessionId: data['request_id']?.toString(),
-            );
-          }
-          // If insufficient balance, return immediately - do not retry
-          if (data['status_code'] == 416) {
-            return SmsResult(
-              success: false,
-              isSimulated: false,
-              message: data['message']?.toString() ?? 'Fast2SMS: Insufficient wallet balance.',
-            );
-          }
-        } catch (_) {}
-      }
-
-      // Attempt 2: Quick SMS 'q' Route fallback (Only if OTP route returned 400/DLT restriction)
+      // Primary Attempt: Quick SMS 'q' Route (Instant delivery without DLT / website verification requirement)
       final quickResponse = await http.post(
         url,
         headers: {
@@ -588,7 +534,7 @@ class SmsService {
           'flash': 0,
           'numbers': phone,
         }),
-      ).timeout(const Duration(seconds: 10));
+      ).timeout(const Duration(seconds: 8));
 
       if (quickResponse.statusCode == 200) {
         try {
@@ -601,14 +547,41 @@ class SmsService {
               sessionId: data['request_id']?.toString(),
             );
           }
-          final msg = data['message'] is List
-              ? (data['message'] as List).join(', ')
-              : data['message']?.toString();
-          return SmsResult(
-            success: false,
-            isSimulated: false,
-            message: msg ?? 'Fast2SMS dispatch failed',
-          );
+          if (data['status_code'] == 416) {
+            return SmsResult(
+              success: false,
+              isSimulated: false,
+              message: data['message']?.toString() ?? 'Fast2SMS: Insufficient wallet balance.',
+            );
+          }
+        } catch (_) {}
+      }
+
+      // Fallback Attempt: Standard Fast2SMS OTP Route
+      final otpResponse = await http.post(
+        url,
+        headers: {
+          'authorization': apiKey,
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'variables_values': otp,
+          'route': 'otp',
+          'numbers': phone,
+        }),
+      ).timeout(const Duration(seconds: 8));
+
+      if (otpResponse.statusCode == 200) {
+        try {
+          final data = jsonDecode(otpResponse.body);
+          if (data['return'] == true) {
+            return SmsResult(
+              success: true,
+              isSimulated: false,
+              message: 'SMS delivered to Registered Mobile number',
+              sessionId: data['request_id']?.toString(),
+            );
+          }
         } catch (_) {}
       }
 

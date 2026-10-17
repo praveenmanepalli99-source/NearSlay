@@ -389,31 +389,9 @@ class SmsService {
       nativeError = e.toString();
     }
 
-    // 2. Fallback to Indian Telecom SMS Gateways (Fast2SMS / 2Factor)
-    try {
-      final key = activeApiKey.isNotEmpty ? activeApiKey : defaultFast2SmsKey;
-      final fast2SmsResult = await _sendViaFast2Sms(phone, otp, key);
-      if (fast2SmsResult.success) {
-        return SmsResult(
-          success: true,
-          isSimulated: false,
-          message: 'SMS delivered to +91 $phone via Indian SMS gateway',
-          sessionId: fast2SmsResult.sessionId,
-        );
-      }
-    } catch (_) {}
-
-    try {
-      final twoFactorResult = await _sendVia2Factor(phone, otp, default2FactorKey);
-      if (twoFactorResult.success) {
-        return SmsResult(
-          success: true,
-          isSimulated: false,
-          message: 'OTP code sent to Registered Mobile number',
-          sessionId: twoFactorResult.sessionId,
-        );
-      }
-    } catch (_) {}
+    // Note: Do not silently fallback to paid Fast2SMS when user is using pure Firebase.
+    // If native fails on non-mobile (e.g. web/desktop simulator), try Identity Toolkit REST.
+    if (nativeError.contains('MissingPluginException') || nativeError.contains('timed out')) {
 
     // 3. Fallback: Firebase Identity Toolkit REST API (Acquires session token for web/testing)
     try {
@@ -458,8 +436,9 @@ class SmsService {
           }
         } catch (_) {}
       }
-    } catch (e) {
-      if (nativeError.isEmpty) nativeError = e.toString();
+      } catch (e) {
+        if (nativeError.isEmpty) nativeError = e.toString();
+      }
     }
 
     return SmsResult(

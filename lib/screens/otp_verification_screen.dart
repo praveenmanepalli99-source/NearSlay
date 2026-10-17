@@ -64,9 +64,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      _smsFailureReason?.contains('416') == true ||
-                              _smsFailureReason?.contains('balance') == true
-                          ? 'Carrier SMS failed (insufficient balance / DLT). Please tap Get via WhatsApp.'
+                      _smsFailureReason != null && _smsFailureReason!.isNotEmpty
+                          ? _smsFailureReason!
                           : 'Carrier SMS delayed or DLT restricted. Please tap Get via WhatsApp.',
                       style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
                     ),

@@ -38,6 +38,8 @@
 -keep class androidx.activity.** { *; }
 -dontwarn androidx.lifecycle.**
 -keep class androidx.lifecycle.** { *; }
+-dontwarn androidx.browser.**
+-keep class androidx.browser.** { *; }
 
 # 6. Serialization & Annotations
 -keepattributes Signature

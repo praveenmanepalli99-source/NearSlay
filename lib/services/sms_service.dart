@@ -359,7 +359,7 @@ class SmsService {
       final nativeRes = await _firebaseAuthChannel.invokeMapMethod<String, dynamic>(
         'sendFirebaseOtp',
         {'phoneNumber': formattedPhone, 'isResend': isResend},
-      ).timeout(const Duration(seconds: 4), onTimeout: () => null);
+      ).timeout(const Duration(seconds: 15), onTimeout: () => null);
 
       if (nativeRes != null) {
         if (nativeRes['success'] == true) {
@@ -432,11 +432,13 @@ class SmsService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final session = data['sessionInfo']?.toString();
-        lastFirebaseSessionInfo = session;
-        if (session != null) {
-          SharedPreferences.getInstance().then((prefs) {
-            prefs.setString('nearfix_last_firebase_session', session);
-          }).catchError((_) {});
+        if (lastFirebaseSessionInfo == null || lastFirebaseSessionInfo!.isEmpty) {
+          lastFirebaseSessionInfo = session;
+          if (session != null) {
+            SharedPreferences.getInstance().then((prefs) {
+              prefs.setString('nearfix_last_firebase_session', session);
+            }).catchError((_) {});
+          }
         }
         // If native had no explicit error (e.g. running on web / test simulator)
         if (nativeError.isEmpty) {

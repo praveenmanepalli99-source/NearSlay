@@ -175,7 +175,7 @@ class MainActivity: FlutterActivity() {
                         val optionsBuilder = PhoneAuthOptions.newBuilder(auth)
                             .setPhoneNumber(phone)
                             .setTimeout(60L, TimeUnit.SECONDS)
-                            // Note: Omit setActivity(this) so Firebase never opens a Chrome Custom Tab browser window
+                            .setActivity(this)
                             .setCallbacks(callbacks)
 
                         if (isResend && staticResendToken != null) {
@@ -198,7 +198,7 @@ class MainActivity: FlutterActivity() {
                     val code = rawCode.replace("\\D".toRegex(), "").trim()
                     val argId = (call.argument<String>("verificationId") ?: "").trim()
 
-                    val verificationId = if (argId.isNotEmpty()) {
+                    val verificationId = if (argId.isNotEmpty() && !argId.startsWith("AD8T")) {
                         argId
                     } else if (!staticVerificationId.isNullOrEmpty()) {
                         staticVerificationId!!

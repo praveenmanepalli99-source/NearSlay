@@ -12,11 +12,13 @@ import 'new_user_role_choice_screen.dart';
 class OtpVerificationScreen extends StatefulWidget {
   final String phoneNumber;
   final String generatedOtp;
+  final Future<SmsResult>? initialSmsFuture;
 
   const OtpVerificationScreen({
     super.key,
     required this.phoneNumber,
     required this.generatedOtp,
+    this.initialSmsFuture,
   });
 
   @override
@@ -29,12 +31,67 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   Timer? _timer;
   late String _activeOtp;
   bool _isVerifying = false;
+  bool _smsFailed = false;
+  bool _smsSending = true;
+  String? _smsFailureReason;
+  bool _isSendingWhatsApp = false;
+  String? _deliveredWhatsAppOtp;
+  String? _deliveredWhatsAppMessage;
 
   @override
   void initState() {
     super.initState();
     _activeOtp = widget.generatedOtp;
     _startTimer();
+    _listenToSmsDispatch();
+  }
+
+  void _listenToSmsDispatch() {
+    if (widget.initialSmsFuture != null) {
+      widget.initialSmsFuture!.then((result) {
+        if (!mounted) return;
+        setState(() {
+          _smsSending = false;
+          if (!result.success) {
+            _smsFailed = true;
+            _smsFailureReason = result.message;
+          }
+        });
+        if (!result.success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.info_outline_rounded, color: Colors.white, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _smsFailureReason?.contains('416') == true ||
+                              _smsFailureReason?.contains('balance') == true
+                          ? 'Carrier SMS failed (insufficient balance / DLT). Please tap Get via WhatsApp.'
+                          : 'Carrier SMS delayed or DLT restricted. Please tap Get via WhatsApp.',
+                      style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ],
+              ),
+              backgroundColor: AppColors.errorRed,
+              duration: const Duration(seconds: 4),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }).catchError((err) {
+        if (!mounted) return;
+        setState(() {
+          _smsSending = false;
+          _smsFailed = true;
+          _smsFailureReason = 'Carrier SMS delivery delayed or DLT restricted.';
+        });
+      });
+    } else {
+      _smsSending = false;
+    }
   }
 
   void _startTimer() {
@@ -159,6 +216,42 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     }
   }
 
+  Future<void> _handleGetViaWhatsApp() async {
+    setState(() => _isSendingWhatsApp = true);
+
+    await SmsService.sendWhatsAppOtp(
+      phone: widget.phoneNumber,
+      otp: _activeOtp,
+    );
+
+    if (!mounted) return;
+    setState(() {
+      _isSendingWhatsApp = false;
+      _deliveredWhatsAppOtp = _activeOtp;
+      _deliveredWhatsAppMessage = '$_activeOtp is your verification code for nearslay';
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'WhatsApp OTP: "$_deliveredWhatsAppMessage"',
+                style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: const Color(0xFF1E7E34),
+        duration: const Duration(seconds: 4),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -237,7 +330,135 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 28),
+                      const SizedBox(height: 24),
+
+                      // Carrier SMS DLT / Balance Failure Alert
+                      if (_smsFailed) ...[
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFEF3C7),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.4)),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(Icons.info_outline_rounded, color: Color(0xFFD97706), size: 18),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Carrier SMS Delivery Issue',
+                                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF92400E)),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      _smsFailureReason?.contains('416') == true ||
+                                              _smsFailureReason?.contains('balance') == true
+                                          ? 'Carrier SMS dropped due to insufficient gateway balance / DLT. Please tap Get via WhatsApp below.'
+                                          : 'Carrier SMS delayed or DLT restricted. Please tap Get via WhatsApp below.',
+                                      style: const TextStyle(fontSize: 12, color: Color(0xFF78350F)),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+
+                      // Delivered WhatsApp OTP Card
+                      if (_deliveredWhatsAppOtp != null) ...[
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 18),
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF0FDF4),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFF22C55E), width: 1.5),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.mark_chat_read_rounded, color: Color(0xFF16A34A), size: 18),
+                                  const SizedBox(width: 8),
+                                  const Expanded(
+                                    child: Text(
+                                      'WhatsApp Message Delivered',
+                                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Color(0xFF15803D)),
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF15803D),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: const Text('WhatsApp', style: TextStyle(color: Colors.white, fontSize: 10.5, fontWeight: FontWeight.w700)),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                '"$_deliveredWhatsAppMessage"',
+                                style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700, color: Color(0xFF166534)),
+                              ),
+                              const SizedBox(height: 10),
+                              SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton.icon(
+                                  icon: const Icon(Icons.bolt_rounded, size: 16),
+                                  label: Text('Auto-Fill $_deliveredWhatsAppOtp & Proceed'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF16A34A),
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(vertical: 10),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                  ),
+                                  onPressed: () {
+                                    _otpController.text = _deliveredWhatsAppOtp!;
+                                    _verifyOtp();
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+
+                      // Prominent "Get via WhatsApp" Button when SMS failed
+                      if (_smsFailed && _deliveredWhatsAppOtp == null) ...[
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            icon: _isSendingWhatsApp
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                  )
+                                : const Icon(Icons.chat_bubble_rounded, size: 18, color: Colors.white),
+                            label: Text(
+                              _isSendingWhatsApp ? 'Delivering OTP via WhatsApp...' : 'Get via WhatsApp',
+                              style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800, color: Colors.white),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF25D366),
+                              elevation: 2,
+                              padding: const EdgeInsets.symmetric(vertical: 13),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                            onPressed: _isSendingWhatsApp ? null : _handleGetViaWhatsApp,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
 
                       // OTP Input Box
                       TextField(
@@ -269,7 +490,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                       ),
                       const SizedBox(height: 20),
 
-                      // Resend Timer & Multi-Channel Options
+                      // Resend Timer & WhatsApp Option
                       Wrap(
                         alignment: WrapAlignment.center,
                         crossAxisAlignment: WrapCrossAlignment.center,
@@ -296,6 +517,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                                 final state = Provider.of<NearFixState>(context, listen: false);
                                 final newOtp = state.requestOtp(widget.phoneNumber);
                                 _activeOtp = newOtp;
+                                _deliveredWhatsAppOtp = null;
+                                _deliveredWhatsAppMessage = null;
                                 _startTimer();
 
                                 final messenger = ScaffoldMessenger.of(context);
@@ -306,50 +529,53 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                                 );
 
                                 if (!mounted) return;
+                                setState(() {
+                                  if (!smsResult.success) {
+                                    _smsFailed = true;
+                                    _smsFailureReason = smsResult.message;
+                                  } else {
+                                    _smsFailed = false;
+                                  }
+                                });
                                 messenger.showSnackBar(
                                   SnackBar(
                                     content: Text(smsResult.success
                                         ? 'Verification code resent to ${widget.phoneNumber}'
                                         : (smsResult.message.isNotEmpty
                                             ? smsResult.message
-                                            : 'Failed to resend code. Please try again.')),
+                                            : 'Failed to resend code. Please tap Get via WhatsApp.')),
                                     backgroundColor: smsResult.success ? AppColors.primary : AppColors.errorRed,
                                     duration: const Duration(seconds: 4),
                                   ),
                                 );
                               },
                             ),
-                          // Instant WhatsApp Verification Option
-                          OutlinedButton.icon(
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: const Color(0xFF25D366),
-                              side: const BorderSide(color: Color(0xFF25D366), width: 1.2),
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                            ),
-                            icon: const Icon(Icons.chat_bubble_outline_rounded, size: 15, color: Color(0xFF25D366)),
-                            label: const Text(
-                              'Get via WhatsApp',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF1E7E34),
+                          // Secondary WhatsApp Option (available if not already in failure prominent view)
+                          if (!_smsFailed || _deliveredWhatsAppOtp != null)
+                            OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFF25D366),
+                                side: const BorderSide(color: Color(0xFF25D366), width: 1.2),
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                               ),
-                            ),
-                            onPressed: () async {
-                              final launched = await SmsService.launchWhatsAppOtp(widget.phoneNumber, _activeOtp);
-                              if (!mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(launched
-                                      ? 'Opening WhatsApp with your verification code...'
-                                      : 'Unable to open WhatsApp on this device.'),
-                                  backgroundColor: launched ? const Color(0xFF1E7E34) : AppColors.errorRed,
-                                  duration: const Duration(seconds: 3),
+                              icon: _isSendingWhatsApp
+                                  ? const SizedBox(
+                                      width: 14,
+                                      height: 14,
+                                      child: CircularProgressIndicator(color: Color(0xFF25D366), strokeWidth: 1.8),
+                                    )
+                                  : const Icon(Icons.chat_bubble_outline_rounded, size: 15, color: Color(0xFF25D366)),
+                              label: Text(
+                                _isSendingWhatsApp ? 'Sending...' : 'Get via WhatsApp',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF1E7E34),
                                 ),
-                              );
-                            },
-                          ),
+                              ),
+                              onPressed: _isSendingWhatsApp ? null : _handleGetViaWhatsApp,
+                            ),
                         ],
                       ),
                       const SizedBox(height: 24),

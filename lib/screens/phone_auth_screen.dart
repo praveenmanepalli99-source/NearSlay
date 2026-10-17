@@ -53,46 +53,17 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
     final formattedPhone = phone.startsWith('+91') ? phone : '+91 $phone';
     final generatedOtp = state.requestOtp(formattedPhone);
 
-    // Trigger live mobile dispatch in backend
-    final smsResult = await SmsService.sendOtpSms(phone: formattedPhone, otp: generatedOtp);
+    // Trigger live mobile dispatch asynchronously in background
+    final smsFuture = SmsService.sendOtpSms(phone: formattedPhone, otp: generatedOtp);
 
     // Trigger cloud sync asynchronously in background without blocking UI
     state.syncWithCloud(showIndicator: false);
 
+    // Snappy visual feedback (under 250ms) then navigate immediately
+    await Future.delayed(const Duration(milliseconds: 200));
+
     if (mounted) {
       setState(() => _isSending = false);
-
-      if (!smsResult.success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.info_outline_rounded, color: Colors.white, size: 20),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    smsResult.message.isNotEmpty && !smsResult.message.contains('MissingActivity')
-                        ? '${smsResult.message}. You can get code via WhatsApp on the next screen.'
-                        : 'Carrier SMS delayed. You can retrieve your OTP code via WhatsApp.',
-                    style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ],
-            ),
-            backgroundColor: AppColors.textPrimary,
-            duration: const Duration(seconds: 4),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Verification code sent to $formattedPhone'),
-            backgroundColor: AppColors.primary,
-            duration: const Duration(seconds: 4),
-          ),
-        );
-      }
 
       Navigator.push(
         context,
@@ -100,6 +71,7 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
           builder: (context) => OtpVerificationScreen(
             phoneNumber: formattedPhone,
             generatedOtp: generatedOtp,
+            initialSmsFuture: smsFuture,
           ),
         ),
       );

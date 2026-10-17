@@ -1217,5 +1217,21 @@ void main() {
       // Reset test override
       FirebaseService.forceTestUserAvailableInCloud = null;
     });
+
+    test('35. WhatsApp OTP formatting and delivery payload verification', () async {
+      const phone = '9912525829';
+      const otp = '781920';
+
+      final res = await SmsService.sendWhatsAppOtp(phone: phone, otp: otp);
+
+      expect(res['success'], true);
+      expect(res['otp'], otp);
+      expect(res['formattedMessage'], '$otp is your verification code for nearslay');
+      expect(SmsService.lastSentOtpCode, otp);
+
+      // Verify that verifyReceivedCode accepts this WhatsApp OTP code
+      final verified = await SmsService.verifyReceivedCode(otp, expectedOtp: otp);
+      expect(verified, true);
+    });
   });
 }

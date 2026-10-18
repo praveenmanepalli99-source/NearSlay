@@ -5,7 +5,7 @@ import 'package:razorpay_flutter/razorpay_flutter.dart';
 /// Handles 1-tap automated checkout with bank cryptographic signature verification
 class RazorpayService {
   // Test Key by default. Replace with your live Razorpay Key (rzp_live_...) for production
-  static String razorpayKeyId = 'rzp_test_51b9Nq1F3W9J4X';
+  static String razorpayKeyId = 'rzp_test_Tn0yjqmnPGxW76';
 
   late Razorpay _razorpay;
   Function(PaymentSuccessResponse)? _onSuccess;
@@ -76,7 +76,6 @@ class RazorpayService {
         'name': providerName.isNotEmpty ? providerName : 'Service Provider',
         'method': 'upi',
       },
-      'method': 'upi',
       'theme': {
         'color': '#059669',
       },

@@ -98,6 +98,18 @@
       "city": "Palwancha",
       "colonyId": "colony_648312168",
       "colonyName": "KTPS",
+      "flatAddress": "Rahul gandhi nagar",
+      "id": "user_1792233848731",
+      "isPurchaser": false,
+      "name": "Venkateswarlu",
+      "phone": "+91 9010516695",
+      "rewardCoins": 0
+    },
+    {
+      "avatarUrl": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200",
+      "city": "Palwancha",
+      "colonyId": "colony_648312168",
+      "colonyName": "KTPS",
       "flatAddress": "Rahul Gandhi nagar",
       "id": "user_1792146011340",
       "isPurchaser": false,
@@ -127,6 +139,30 @@
       "isPurchaser": false,
       "name": "Praveen",
       "phone": "+91 9912525829",
+      "rewardCoins": 0
+    },
+    {
+      "avatarUrl": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200",
+      "city": "Palwancha",
+      "colonyId": "colony_648312168",
+      "colonyName": "KTPS",
+      "flatAddress": "Rahul gandhi Nagar",
+      "id": "user_1792296393689",
+      "isPurchaser": false,
+      "name": "Mallaiah",
+      "phone": "+91 9989241369",
+      "rewardCoins": 0
+    },
+    {
+      "avatarUrl": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200",
+      "city": "Palwancha",
+      "colonyId": "colony_648312168",
+      "colonyName": "KTPS",
+      "flatAddress": "Shiva nagar",
+      "id": "user_1792238275632",
+      "isPurchaser": false,
+      "name": "Karthik Somavarapu",
+      "phone": "+91 9989295847",
       "rewardCoins": 0
     }
   ],

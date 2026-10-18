@@ -74,7 +74,9 @@ class RazorpayService {
             ? providerEmail
             : 'support@nearslay.com',
         'name': providerName.isNotEmpty ? providerName : 'Service Provider',
+        'method': 'upi',
       },
+      'method': 'upi',
       'theme': {
         'color': '#059669',
       },
@@ -82,6 +84,7 @@ class RazorpayService {
         'enabled': true,
         'max_count': 1,
       },
+      'send_sms_hash': true,
       'notes': {
         'plan': 'nearslay_pro_monthly',
         'tax_invoice_ref': receiptNumber,

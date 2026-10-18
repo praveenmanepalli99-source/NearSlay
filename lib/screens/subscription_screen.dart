@@ -518,7 +518,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
           labelColor: AppColors.primary,
           unselectedLabelColor: AppColors.textSecondary,
           tabs: const [
-            Tab(icon: Icon(Icons.star_rounded, size: 18), text: 'Plan & Direct UPI'),
+            Tab(icon: Icon(Icons.star_rounded, size: 18), text: 'Plan & Payment'),
             Tab(icon: Icon(Icons.receipt_long_rounded, size: 18), text: 'Invoices & History'),
           ],
         ),
@@ -562,7 +562,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
     }
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 36),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -784,7 +784,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(color: const Color(0xFFE2E8F0)),
               boxShadow: [
                 BoxShadow(
@@ -811,7 +811,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 const Text(
                   'Razorpay UPI (GPay / PhonePe / Paytm / BHIM)',
                   style: TextStyle(
@@ -836,8 +836,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
                     _buildPaymentBadge('Google Pay', const Color(0xFF1A73E8)),
                     _buildPaymentBadge('Paytm', const Color(0xFF00BAF2)),
                     _buildPaymentBadge('BHIM UPI', const Color(0xFF059669)),
-                    _buildPaymentBadge('Debit/Credit Cards', const Color(0xFF334155)),
-                    _buildPaymentBadge('NetBanking', const Color(0xFF475569)),
+                    _buildPaymentBadge('CRED UPI', const Color(0xFF1E293B)),
+                    _buildPaymentBadge('All UPI Apps', const Color(0xFF475569)),
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -871,8 +871,15 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppColors.cardBorder),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.03),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -880,24 +887,27 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
                 const Text(
                   'Tax & Price Breakdown',
                   style: TextStyle(
-                    fontSize: 13.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w800,
                     color: AppColors.textPrimary,
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 12),
                 _buildSummaryRow('Base Subscription Plan (1 Month)', '₹99.00'),
                 _buildSummaryRow('CGST (9.0%)', '₹8.91'),
                 _buildSummaryRow('SGST (9.0%)', '₹8.91'),
                 _buildSummaryRow('Total GST (18%)', '₹17.82', color: const Color(0xFF475569)),
-                const Divider(height: 14),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: Divider(height: 1, thickness: 1, color: Color(0xFFE2E8F0)),
+                ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
                       'Total Payable Amount',
                       style: TextStyle(
-                        fontSize: 14.5,
+                        fontSize: 15,
                         fontWeight: FontWeight.w900,
                         color: AppColors.textPrimary,
                       ),
@@ -905,7 +915,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
                     Text(
                       '₹${finalPayable.toStringAsFixed(2)}',
                       style: const TextStyle(
-                        fontSize: 18,
+                        fontSize: 19,
                         fontWeight: FontWeight.w900,
                         color: AppColors.primary,
                       ),
@@ -917,7 +927,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
           ),
           const SizedBox(height: 20),
 
-          // 7. Instant Pay & Activate Button (Razorpay Seamless Checkout)
+          // 5. Single Unified Pay Button (Routes through Razorpay with UPI Apps intent)
           SizedBox(
             width: double.infinity,
             height: 52,
@@ -932,14 +942,18 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
                       child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                     )
                   : const Icon(
-                      Icons.flash_on_rounded,
+                      Icons.lock_outline_rounded,
                       size: 20,
                     ),
               label: Text(
                 _isProcessing
-                    ? 'Launching Razorpay...'
-                    : 'Pay ₹${finalPayable.toStringAsFixed(2)} via Razorpay (UPI)',
-                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900),
+                    ? 'Processing Payment...'
+                    : 'Pay ₹${finalPayable.toStringAsFixed(2)}',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.3,
+                ),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF059669),
@@ -949,30 +963,26 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
               ),
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 14),
 
-          // 8. Direct UPI Apps Button (Google Pay / PhonePe / Paytm / BHIM)
-          SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: OutlinedButton.icon(
-              onPressed: () => _launchDirectUpi(finalPayable),
-              icon: const Icon(Icons.account_balance_wallet_rounded, size: 19, color: Color(0xFF2563EB)),
-              label: const Text(
-                'Pay via UPI Apps (Google Pay / PhonePe / Paytm)',
-                style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w800, color: Color(0xFF2563EB)),
-              ),
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          const Center(
-            child: Text(
-              '🔒 Bank-Grade Security • Automated Verification • Instant Tax Invoice',
-              style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+          // 6. Security Footer Badge (Aligned & Responsive)
+          Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.verified_user_rounded, size: 14, color: Color(0xFF059669)),
+                const SizedBox(width: 6),
+                Text(
+                  'Bank-Grade Security • Instant Activation • Tax Invoice',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 24),

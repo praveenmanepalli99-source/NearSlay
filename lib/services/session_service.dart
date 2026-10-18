@@ -12,6 +12,7 @@ class SavedSessionData {
   final ProviderModel? provider;
   final ColonyModel? colony;
   final List<ProviderModel> allProviders;
+  final String verifiedPhone;
 
   const SavedSessionData({
     required this.isLoggedIn,
@@ -20,6 +21,7 @@ class SavedSessionData {
     this.provider,
     this.colony,
     required this.allProviders,
+    this.verifiedPhone = '',
   });
 }
 
@@ -30,6 +32,7 @@ class SessionService {
   static const String _keyProvider = 'nearfix_provider_data';
   static const String _keyColony = 'nearfix_colony_data';
   static const String _keyAllProviders = 'nearfix_all_providers_list';
+  static const String _keyVerifiedPhone = 'nearfix_verified_phone';
 
   /// Save Resident Session
   static Future<void> saveResidentSession({
@@ -42,6 +45,7 @@ class SessionService {
     await prefs.setString(_keyActiveRole, 'resident');
     await prefs.setString(_keyUser, jsonEncode(user.toJson()));
     await prefs.setString(_keyColony, jsonEncode(colony.toJson()));
+    await prefs.setString(_keyVerifiedPhone, user.phone);
     await saveAllProviders(allProviders);
   }
 
@@ -56,6 +60,7 @@ class SessionService {
     await prefs.setString(_keyActiveRole, 'provider');
     await prefs.setString(_keyProvider, jsonEncode(provider.toJson()));
     await prefs.setString(_keyColony, jsonEncode(colony.toJson()));
+    await prefs.setString(_keyVerifiedPhone, provider.realPhone);
     await saveAllProviders(allProviders);
   }
 
@@ -202,6 +207,9 @@ class SessionService {
         role = AppRole.provider;
       }
 
+      final verifiedPhone = prefs.getString(_keyVerifiedPhone) ??
+          (user?.phone ?? (provider?.realPhone ?? ''));
+
       return SavedSessionData(
         isLoggedIn: isLoggedIn,
         role: role,
@@ -209,6 +217,7 @@ class SessionService {
         provider: provider,
         colony: colony,
         allProviders: allProviders,
+        verifiedPhone: verifiedPhone,
       );
     } catch (_) {
       return null;
@@ -228,6 +237,7 @@ class SessionService {
     await prefs.setString(_keyActiveRole, 'unregistered');
     await prefs.remove(_keyUser);
     await prefs.remove(_keyProvider);
+    await prefs.remove(_keyVerifiedPhone);
   }
 
   /// Completely wipe all SharedPreferences cache (session, lists, and pending queues)

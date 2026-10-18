@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'state/nearfix_state.dart';
 import 'theme/app_theme.dart';
+import 'theme/app_colors.dart';
 import 'screens/phone_auth_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/provider_dashboard_screen.dart';
@@ -53,6 +54,16 @@ class RootScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = Provider.of<NearFixState>(context);
+
+    // Wait until local session is loaded from SharedPreferences
+    if (!state.isSessionLoaded) {
+      return const Scaffold(
+        backgroundColor: Colors.white,
+        body: Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
+      );
+    }
 
     // If logged out or new user, ask for Mobile Number first
     if (!state.isLoggedIn || state.activeRole == AppRole.unregistered) {

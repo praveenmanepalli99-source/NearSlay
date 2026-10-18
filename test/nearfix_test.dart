@@ -1116,8 +1116,8 @@ void main() {
       expect(find.text('Tax & Price Breakdown'), findsOneWidget);
       expect(find.text('Total GST (18%)'), findsOneWidget);
 
-      // Verify there is EXACTLY ONE primary Pay button on the subscription tab (Razorpay UPI)
-      expect(find.text('Pay ₹116.82 via Razorpay (UPI)'), findsOneWidget);
+      // Verify there is EXACTLY ONE primary Pay button on the subscription tab
+      expect(find.text('Pay ₹116.82'), findsOneWidget);
       expect(find.text('Razorpay UPI (GPay / PhonePe / Paytm / BHIM)'), findsOneWidget);
     });
 
@@ -1232,6 +1232,76 @@ void main() {
       // Verify that verifyReceivedCode accepts this WhatsApp OTP code
       final verified = await SmsService.verifyReceivedCode(otp, expectedOtp: otp);
       expect(verified, true);
+    });
+
+    test('36. User Session Persistence: App close and reopen retains logged in resident and provider sessions without logout', () async {
+      SharedPreferences.setMockInitialValues({});
+      final state1 = NearFixState();
+      final colony = state1.colonies[0];
+      const testPhone = '9912525829';
+
+      // 1. Resident registers and logs in
+      await state1.registerResident(
+        name: 'Praveen Manepalli',
+        colony: colony,
+        flatAddress: 'Flat 101, KTPS',
+        phone: testPhone,
+      );
+      expect(state1.isLoggedIn, true);
+      expect(state1.activeRole, AppRole.resident);
+      expect(state1.currentUser != null, true);
+
+      // 2. Simulate app close and reload from SharedPreferences
+      final saved = await SessionService.loadSession();
+      expect(saved != null, true);
+      expect(saved!.isLoggedIn, true);
+      expect(saved.role, AppRole.resident);
+      expect(saved.user != null, true);
+      expect(saved.user!.name, 'Praveen Manepalli');
+
+      // 3. Simulate new state instance on app reopen
+      final state2 = NearFixState();
+      await state2.syncWithCloud(showIndicator: false);
+
+      // Verify that syncWithCloud on reopen does NOT log out the user!
+      final reloadedSession = await SessionService.loadSession();
+      expect(reloadedSession != null, true);
+      expect(reloadedSession!.isLoggedIn, true);
+      expect(reloadedSession.role, AppRole.resident);
+
+      // 4. Provider registration session persistence
+      await state1.registerServiceProvider(
+        name: 'Praveen Plumber',
+        avatarUrl: '',
+        category: ServiceType.plumber,
+        categoryTitle: 'Plumber',
+        hourlyRate: 299,
+        colony: colony,
+        phone: '9876543210',
+        bio: 'Expert Plumber',
+      );
+      expect(state1.isLoggedIn, true);
+      expect(state1.activeRole, AppRole.provider);
+
+      final savedProv = await SessionService.loadSession();
+      expect(savedProv != null, true);
+      expect(savedProv!.isLoggedIn, true);
+      expect(savedProv.role, AppRole.provider);
+      expect(savedProv.provider != null, true);
+      expect(savedProv.provider!.name, 'Praveen Plumber');
+
+      // Reopening app and syncing must keep provider logged in
+      await state2.syncWithCloud(showIndicator: false);
+      final reloadedProvSession = await SessionService.loadSession();
+      expect(reloadedProvSession!.isLoggedIn, true);
+      expect(reloadedProvSession.role, AppRole.provider);
+
+      // 5. Only explicit logout clears the session
+      state1.logout();
+      expect(state1.isLoggedIn, false);
+      expect(state1.activeRole, AppRole.unregistered);
+      final loggedOutSession = await SessionService.loadSession();
+      expect(loggedOutSession!.isLoggedIn, false);
     });
   });
 }

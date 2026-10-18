@@ -423,36 +423,43 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'NearSlay Pro Plan',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w900,
-                            color: AppColors.textPrimary,
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'NearSlay Pro Plan',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.textPrimary,
+                            ),
                           ),
-                        ),
-                        Text(
-                          'Uninterrupted colony visibility & direct calls',
-                          style: TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
-                        ),
-                      ],
+                          SizedBox(height: 2),
+                          Text(
+                            'Uninterrupted colony visibility & direct calls',
+                            style: TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
+                          ),
+                        ],
+                      ),
                     ),
+                    const SizedBox(width: 12),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
                         color: AppColors.primaryLight,
                         borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: AppColors.primary.withOpacity(0.25)),
                       ),
                       child: const Text(
                         '₹99 + GST',
                         style: TextStyle(
-                          fontSize: 15,
+                          fontSize: 13.5,
                           fontWeight: FontWeight.w900,
                           color: AppColors.primaryDark,
+                          letterSpacing: 0.2,
                         ),
                       ),
                     ),

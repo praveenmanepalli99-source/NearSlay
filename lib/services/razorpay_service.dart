@@ -4,8 +4,8 @@ import 'package:razorpay_flutter/razorpay_flutter.dart';
 /// Production Razorpay Gateway Service
 /// Handles 1-tap automated checkout with bank cryptographic signature verification
 class RazorpayService {
-  // Test Key by default. Replace with your live Razorpay Key (rzp_live_...) for production
-  static String razorpayKeyId = 'rzp_test_Tn0yjqmnPGxW76';
+  // Production Live Key ID
+  static String razorpayKeyId = 'rzp_live_TpJgiAsuYTm6HL';
 
   late Razorpay _razorpay;
   Function(PaymentSuccessResponse)? _onSuccess;

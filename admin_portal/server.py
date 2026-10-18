@@ -14,7 +14,7 @@ from urllib.parse import urlparse
 DB_FILE = os.path.join(os.path.dirname(__file__), 'cloud_db.json')
 FIREBASE_RTDB_URL = "https://nearslay-default-rtdb.firebaseio.com"
 
-RAZORPAY_KEY_ID = os.environ.get("RAZORPAY_KEY_ID", "rzp_test_51b9Nq1F3W9J4X")
+RAZORPAY_KEY_ID = os.environ.get("RAZORPAY_KEY_ID", "rzp_live_TpJgiAsuYTm6HL")
 RAZORPAY_KEY_SECRET = os.environ.get("RAZORPAY_KEY_SECRET", "secret_NearSlayRazorpayKey")
 RAZORPAY_WEBHOOK_SECRET = os.environ.get("RAZORPAY_WEBHOOK_SECRET", "webhook_secret_NearSlay")
 

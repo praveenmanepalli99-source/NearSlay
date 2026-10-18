@@ -17,7 +17,7 @@ const GRACE_PERIOD_DAYS = 3;
 
 // Razorpay Environment Configuration
 const RAZORPAY_CONFIG = {
-  keyId: process.env.RAZORPAY_KEY_ID || 'rzp_test_51b9Nq1F3W9J4X',
+  keyId: process.env.RAZORPAY_KEY_ID || 'rzp_live_TpJgiAsuYTm6HL',
   keySecret: process.env.RAZORPAY_KEY_SECRET || 'secret_NearSlayRazorpayKey',
   webhookSecret: process.env.RAZORPAY_WEBHOOK_SECRET || 'webhook_secret_NearSlay',
 };

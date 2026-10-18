@@ -66,7 +66,19 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
       providerPhone: effectivePhone,
       receiptNumber: recNumber,
       onSuccess: (PaymentSuccessResponse response) async {
-        final payId = response.paymentId ?? 'pay_${now.millisecondsSinceEpoch}';
+        final payId = response.paymentId;
+        if (payId == null || payId.trim().isEmpty) {
+          setState(() => _isProcessing = false);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Payment verification failed: No valid payment ID received from gateway.'),
+                backgroundColor: AppColors.errorRed,
+              ),
+            );
+          }
+          return;
+        }
 
         // Auto-activate subscription immediately via Razorpay verified payment
         final result = await state.renewSubscription(

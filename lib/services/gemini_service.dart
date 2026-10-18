@@ -39,10 +39,10 @@ class GeminiService {
           apiKey: apiKey,
           systemInstruction: Content.system(
             'You are NearSlay Local AI Assistant. Given a service, booking, or repair inquiry, '
-            'diagnose the cause, suggest the best repair or local service category from [plumber, electrician, mechanic, carpenter, applianceRepair, painter, catering, djSound, doctor, hotel, restaurant, decoration, tentHouse], '
+            'diagnose the cause, suggest the best repair or local service category from [plumber, electrician, mechanic, carpenter, applianceRepair, painter, catering, djSound, hotel, restaurant, decoration, tentHouse], '
             'estimate standard labor or booking rate in INR, provide 2 quick safety tips, and determine urgency (Immediate, High, Normal). '
             'Respond ONLY with valid JSON in the format: '
-            '{"summary": "...", "diagnosis": "...", "category": "plumber/electrician/mechanic/carpenter/applianceRepair/painter/catering/djSound/doctor/hotel/restaurant/decoration/tentHouse", "estimated_rate": "₹200 - ₹500 / hr", "urgency": "Immediate/High/Normal", "safety_tips": ["...", "..."]}',
+            '{"summary": "...", "diagnosis": "...", "category": "plumber/electrician/mechanic/carpenter/applianceRepair/painter/catering/djSound/hotel/restaurant/decoration/tentHouse", "estimated_rate": "₹200 - ₹500 / hr", "urgency": "Immediate/High/Normal", "safety_tips": ["...", "..."]}',
           ),
         );
 
@@ -164,11 +164,11 @@ class GeminiService {
 
     if (lower.contains('doctor') || lower.contains('fever') || lower.contains('clinic') || lower.contains('health') || lower.contains('pain') || lower.contains('sick') || lower.contains('cough')) {
       return const GeminiDiagnosticResult(
-        issueSummary: 'Medical Consultation & Healthcare Request',
-        diagnosis: 'Consult with a verified local doctor or general physician for diagnosis.',
-        recommendedCategory: ServiceType.doctor,
-        categoryTitle: 'Doctor',
-        estimatedRate: 'Starts from ₹300',
+        issueSummary: 'Health & Medical Consultation Inquiry',
+        diagnosis: 'For medical symptoms or illness, please consult your nearest hospital, clinic, or verified healthcare center directly.',
+        recommendedCategory: ServiceType.all,
+        categoryTitle: 'All Services',
+        estimatedRate: 'Contact clinic directly',
         urgency: 'High',
         safetyTips: [
           'Stay hydrated and keep notes of symptoms or current body temperature.',

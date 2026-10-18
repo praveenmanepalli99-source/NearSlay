@@ -34,7 +34,8 @@ class ServiceCategory {
     required this.averagePrice,
   });
 
-  static List<ServiceCategory> get defaultCategories => [
+  /// All registered categories including backend definitions
+  static List<ServiceCategory> get allCategories => [
         const ServiceCategory(
           type: ServiceType.all,
           title: 'All Services',
@@ -148,4 +149,9 @@ class ServiceCategory {
           averagePrice: 1499,
         ),
       ];
+
+  /// Active user-facing categories displayed in UI.
+  /// Temporarily hides Doctor from the UI until business proprietorship & medical licensing is in place.
+  static List<ServiceCategory> get defaultCategories =>
+      allCategories.where((c) => c.type != ServiceType.doctor).toList();
 }

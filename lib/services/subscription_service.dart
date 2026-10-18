@@ -33,9 +33,9 @@ class SubscriptionService {
   static const int freeTrialDays = 90;
   static const int gracePeriodDays = 3;
 
-  /// Business UPI VPA for direct settlements
-  static const String upiVpa = 'pandupraveennani58@ybl';
-  static const String upiPayeeName = 'NearSlay Services';
+  /// Default Business Payee Name
+  static const String upiVpa = '';
+  static const String upiPayeeName = 'NearSlay Technologies';
 
   /// Evaluate provider subscription status, apply 3-day grace period, and auto-hide if expired
   static ProviderModel evaluateProviderSubscription(ProviderModel provider) {
@@ -76,7 +76,7 @@ class SubscriptionService {
       return const SubscriptionReminderAlert(
         title: 'Subscription Expired',
         message:
-            'Your ₹99 + GST monthly subscription has expired. Your profile is currently hidden from resident searches. Pay via UPI to become Available immediately.',
+            'Your ₹99 + GST monthly subscription has expired. Your profile is currently hidden from resident searches. Renew your subscription to become Available immediately.',
         urgency: 'expired',
         daysLeft: 0,
         triggerDay: 93,
@@ -89,7 +89,7 @@ class SubscriptionService {
       return SubscriptionReminderAlert(
         title: 'Grace Period Active ($bufferLeft Days Left)',
         message:
-            'Your free trial has ended. You have $bufferLeft days buffer remaining before your profile is hidden from colony residents. Renew via Direct UPI now.',
+            'Your free trial has ended. You have $bufferLeft days buffer remaining before your profile is hidden from colony residents. Renew your NearSlay Pro subscription now.',
         urgency: 'critical',
         daysLeft: days,
         triggerDay: 90,
